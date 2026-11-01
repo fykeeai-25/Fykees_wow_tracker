@@ -68,7 +68,7 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(c.professions.map((p) => p.name)).toEqual(['Alchemy', 'Cooking', 'Herbalism'])
   })
 
-  it('writes schema 2 with spell id, created item, numMade and game difficulty', () => {
+  it('writes schema 3 with spell id, created item, numMade and game difficulty', () => {
     const s = run()
     expect(s.schemaVersion).toBe(3)
     const alch = s.characters[0].professions.find((p) => p.name === 'Alchemy')!
