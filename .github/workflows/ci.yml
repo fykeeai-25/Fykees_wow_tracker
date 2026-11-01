@@ -25,13 +25,9 @@ jobs:
       - name: Build
         if: success() || failure()
         run: npm run build
-      - name: Upload renderer build
+      - name: Renderer bundle for preview
         if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: renderer
-          path: app/out/renderer
-          retention-days: 3
+        run: echo "RENDERER_B64_BEGIN $(tar -czf - -C out/renderer . | base64 -w0) RENDERER_B64_END"
       - name: Check addon
         run: npm run --if-present check:addon
       - name: Product name check
