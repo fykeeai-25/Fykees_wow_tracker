@@ -1,4 +1,4 @@
-import type { ProfessionData, Reagent, TrackerSnapshot } from './types'
+import type { Container, ProfessionData, Reagent, TrackerSnapshot } from './types'
 
 export const STALE_AFTER_SECONDS = 259200
 
@@ -20,16 +20,33 @@ export interface MaterialRow {
   sources: MaterialSource[]
 }
 
-export function itemName(_id: number, _snapshot: TrackerSnapshot, _data?: ProfessionData): string {
-  throw new Error('not implemented')
+export function itemName(id: number, snapshot: TrackerSnapshot, data?: ProfessionData): string {
+  return data?.items[String(id)] ?? snapshot.itemNames[id] ?? `Item #${id}`
 }
 
 export function materialAvailability(
-  _reagents: Reagent[],
-  _snapshot: TrackerSnapshot,
-  _data: ProfessionData | undefined,
-  _now: number,
-  _multiplier = 1
+  reagents: Reagent[],
+  snapshot: TrackerSnapshot,
+  data: ProfessionData | undefined,
+  now: number,
+  multiplier = 1
 ): MaterialRow[] {
-  throw new Error('not implemented')
+  return reagents.map((r) => {
+    const sources: MaterialSource[] = []
+    const add = (c: Container | undefined, src: Omit<MaterialSource, 'count' | 'seenAt' | 'stale'>): void => {
+      const count = c?.items[r.itemId] ?? 0
+      if (!c || count <= 0) return
+      sources.push({ ...src, count, seenAt: c.seenAt, stale: now - c.seenAt > STALE_AFTER_SECONDS })
+    }
+    for (const ch of snapshot.characters) {
+      const who = { characterKey: ch.key, characterName: ch.name }
+      add(ch.bags, { container: 'bags', ...who })
+      add(ch.bank, { container: 'bank', ...who })
+    }
+    add(snapshot.accountBank, { container: 'accountBank' })
+
+    const needed = r.count * multiplier
+    const total = sources.reduce((sum, s) => sum + s.count, 0)
+    return { itemId: r.itemId, name: itemName(r.itemId, snapshot, data), needed, total, enough: total >= needed, sources }
+  })
 }

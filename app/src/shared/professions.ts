@@ -15,10 +15,30 @@ export interface ClassifiedRecipes {
   unknownKnown: KnownRecipe[]
 }
 
-export function difficultyColor(_r: StaticRecipe, _skill: number): Difficulty {
-  throw new Error('not implemented')
+export function difficultyColor(r: StaticRecipe, skill: number): Difficulty {
+  if (skill < r.skillRange.yellow) return 'orange'
+  if (skill < r.skillRange.green) return 'yellow'
+  if (skill < r.skillRange.gray) return 'green'
+  return 'gray'
 }
 
-export function classifyRecipes(_p: Profession, _data: ProfessionData): ClassifiedRecipes {
-  throw new Error('not implemented')
+const byLearnAtThenName = (a: StaticRecipe, b: StaticRecipe): number =>
+  a.learnAt - b.learnAt || a.name.localeCompare(b.name)
+
+export function classifyRecipes(p: Profession, data: ProfessionData): ClassifiedRecipes {
+  const knownNames = new Set((p.knownRecipes ?? []).map((r) => r.name))
+  const staticNames = new Set(data.recipes.map((r) => r.name))
+  const view = (recipe: StaticRecipe): RecipeView => ({ recipe, difficulty: difficultyColor(recipe, p.skill) })
+  const sorted = [...data.recipes].sort(byLearnAtThenName)
+
+  const notKnown = sorted.filter((r) => !knownNames.has(r.name))
+  const nextLearnAt = Math.min(...notKnown.filter((r) => r.learnAt > p.skill).map((r) => r.learnAt))
+
+  return {
+    scanned: p.knownRecipes !== undefined,
+    known: sorted.filter((r) => knownNames.has(r.name)).map(view),
+    availableNow: notKnown.filter((r) => r.learnAt <= p.skill).map(view),
+    availableNext: notKnown.filter((r) => r.learnAt === nextLearnAt).map(view),
+    unknownKnown: (p.knownRecipes ?? []).filter((r) => !staticNames.has(r.name))
+  }
 }
