@@ -87,4 +87,4 @@ export type LoadState =
 export type AppState =
   | { phase: 'needs-game-dir'; reason?: 'missing-dir' | 'missing-wtf' | 'no-accounts' }
   | { phase: 'needs-account'; gameDir: string; accounts: string[] }
-  | { phase: 'ready'; gameDir: string; account: string; load: LoadState }
+  | { phase: 'ready'; gameDir: string; account: string; load: LoadState; demo?: boolean }

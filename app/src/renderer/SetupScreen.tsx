@@ -4,6 +4,7 @@ export interface SetupScreenProps {
   state: AppState
   onChooseDir(): void
   onSelectAccount(account: string): void
+  onUseDemo?(): void
 }
 
 const REASON: Record<'missing-dir' | 'missing-wtf' | 'no-accounts', string> = {

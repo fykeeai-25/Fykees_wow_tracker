@@ -87,6 +87,10 @@ function character(key: string, v: Obj): Character {
 
 export const SUPPORTED_SCHEMA = 2
 
+export function rebaseTimes(snapshot: TrackerSnapshot, _now: number): TrackerSnapshot {
+  return snapshot
+}
+
 export class AddonNewerError extends Error {
   constructor() {
     super('The addon is newer than the app – please update AzerothTracker.')

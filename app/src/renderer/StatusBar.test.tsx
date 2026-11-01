@@ -34,3 +34,11 @@ describe('StatusBar age', () => {
     expect(screen.getByText('Last /reload 2 h ago')).toBeTruthy()
   })
 })
+
+describe('StatusBar demo', () => {
+  it('prefixes demo data', () => {
+    const load = { status: 'ok' as const, snapshot: { schemaVersion: 2, characters: [], itemNames: {} }, fileUpdatedAt: 1000 }
+    render(<StatusBar load={load} now={1060} demo />)
+    expect(screen.getByText('Demo data · Updated ' + new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(1000 * 1000)) + ' · 1 min ago')).toBeTruthy()
+  })
+})

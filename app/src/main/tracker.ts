@@ -19,6 +19,7 @@ export interface Tracker {
   start(): void
   setGameDir(dir: string): void
   setAccount(account: string): void
+  useDemo(demoGameDir: string): void
   getState(): AppState
   stop(): void
 }
@@ -124,6 +125,9 @@ export function createTracker(opts: TrackerOptions): Tracker {
     setAccount(account) {
       writeConfig(opts.configFile, { ...readConfig(opts.configFile), account })
       refresh()
+    },
+    useDemo() {
+      throw new Error('not implemented')
     },
     getState: () => state,
     stop: stopWatching

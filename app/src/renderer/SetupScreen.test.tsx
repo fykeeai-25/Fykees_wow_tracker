@@ -16,6 +16,13 @@ describe('SetupScreen', () => {
     expect(onChooseDir).toHaveBeenCalled()
   })
 
+  it('offers demo data', () => {
+    const onUseDemo = vi.fn()
+    render(<SetupScreen state={{ phase: 'needs-game-dir' }} onChooseDir={vi.fn()} onSelectAccount={vi.fn()} onUseDemo={onUseDemo} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Try with demo data' }))
+    expect(onUseDemo).toHaveBeenCalled()
+  })
+
   it('shows other reasons', () => {
     const { rerender } = render(
       <SetupScreen state={{ phase: 'needs-game-dir', reason: 'missing-dir' }} onChooseDir={vi.fn()} onSelectAccount={vi.fn()} />

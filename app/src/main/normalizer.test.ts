@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { parseSavedVariables } from './luaParser'
-import { normalize, AddonNewerError } from './normalizer'
+import { normalize, AddonNewerError, rebaseTimes } from './normalizer'
 
 const raw = () =>
   parseSavedVariables(readFileSync(join(__dirname, '../../test/fixtures/AzerothTracker.lua'), 'utf8'))
@@ -90,5 +90,15 @@ describe('normalize', () => {
 
   it('rejects old schemaVersion', () => {
     expect(() => normalize({ schemaVersion: 1 })).toThrow('Unsupported schemaVersion 1')
+  })
+
+  it('rebaseTimes shifts every timestamp so the newest equals now', () => {
+    const s = rebaseTimes(normalize(raw()), 1761980000 + 1000)
+    const thrall = s.characters[1]
+    expect(thrall.updatedAt).toBe(1761980000 + 1000)
+    expect(thrall.bags!.seenAt).toBe(1761980000 + 1000)
+    expect(thrall.bank!.seenAt).toBe(1761634400 + 1000)
+    expect(thrall.professions.find((p) => p.name === 'Alchemy')!.scannedAt).toBe(1761980000 + 1000)
+    expect(s.accountBank!.seenAt).toBe(1761980000 + 1000)
   })
 })

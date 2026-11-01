@@ -152,4 +152,32 @@ describe('tracker', () => {
   it('fixturePath helper points at fixtures', () => {
     expect(fixturePath('x.lua')).toContain(join('test', 'fixtures'))
   })
+
+  it('demo mode → ready with the demo account, data shifted to now', () => {
+    const t = setup(['ACC1'])
+    const demoRoot = tempDir()
+    const demo = fakeGame(demoRoot, ['DEMO'])
+    putSavedVariables(demo, 'DEMO', 'AzerothTracker.lua')
+    t.tracker.start()
+    t.tracker.useDemo(demo)
+    const s = ready(t.tracker.getState())
+    expect(s.account).toBe('DEMO')
+    expect(s.demo).toBe(true)
+    if (s.load.status !== 'ok') throw new Error(s.load.status)
+    expect(s.load.snapshot.characters).toHaveLength(2)
+    const newest = Math.max(...s.load.snapshot.characters.map((c) => c.updatedAt))
+    expect(Math.abs(newest - Math.floor(Date.now() / 1000))).toBeLessThan(5)
+  })
+
+  it('choosing a real folder leaves demo mode', () => {
+    const t = setup(['ACC1'])
+    const demo = fakeGame(tempDir(), ['DEMO'])
+    putSavedVariables(demo, 'DEMO', 'AzerothTracker.lua')
+    t.tracker.start()
+    t.tracker.useDemo(demo)
+    t.tracker.setGameDir(t.game)
+    const s = ready(t.tracker.getState())
+    expect(s.demo).toBe(false)
+    expect(s.account).toBe('ACC1')
+  })
 })
