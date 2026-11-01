@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { KnownRecipe, Profession, ProfessionData, StaticRecipe, TrackerSnapshot } from '../../shared/types'
+import type { Character, KnownRecipe, Profession, ProfessionData, StaticRecipe, TrackerSnapshot } from '../../shared/types'
 import { classifyRecipes, type Difficulty, type RecipeView } from '../../shared/professions'
 import { wowheadItemUrl, wowheadSpellUrl } from '../../shared/wowhead'
 import { useGameData } from '../DataContext'
@@ -129,28 +129,40 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
   )
 }
 
+/** Full professions view for one character: profession tabs, recipe lists and materials. */
+export function ProfessionsDetail({ character, snapshot, now }: { character: Character; snapshot: TrackerSnapshot; now: number }) {
+  const [profName, setProfName] = useState<string>()
+  if (character.professions.length === 0) return <p className="hint">This character has no professions yet.</p>
+  const profession = character.professions.find((p) => p.name === profName) ?? character.professions[0]
+  return (
+    <div className="character-detail">
+      <div className="profession-tabs">
+        {character.professions.map((p) => (
+          <button
+            key={p.name}
+            aria-pressed={p.name === profession.name}
+            className={p.name === profession.name ? 'active' : undefined}
+            onClick={() => setProfName(p.name)}
+          >
+            {p.name} <span className="muted">{`${p.skill}/${p.maxSkill}`}</span>
+          </button>
+        ))}
+      </div>
+      <ProfessionDetail key={`${character.key}/${profession.name}`} profession={profession} snapshot={snapshot} now={now} />
+    </div>
+  )
+}
+
+/** Legacy tab view (character list + detail); removed when the dashboard shell lands. */
 export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; now: number }) {
   const [charKey, setCharKey] = useState(snapshot.characters[0]?.key)
-  const [profName, setProfName] = useState<string>()
-
-  if (snapshot.characters.length === 0) {
-    return <p className="hint">No characters yet – log in and type /reload.</p>
-  }
+  if (snapshot.characters.length === 0) return <p className="hint">No characters yet – log in and type /reload.</p>
   const character = snapshot.characters.find((c) => c.key === charKey) ?? snapshot.characters[0]
-  const profession = character.professions.find((p) => p.name === profName) ?? character.professions[0]
-
   return (
     <div className="professions">
       <nav className="characters" aria-label="Characters">
         {snapshot.characters.map((c) => (
-          <button
-            key={c.key}
-            className={c.key === character.key ? 'active' : undefined}
-            onClick={() => {
-              setCharKey(c.key)
-              setProfName(undefined)
-            }}
-          >
+          <button key={c.key} className={c.key === character.key ? 'active' : undefined} onClick={() => setCharKey(c.key)}>
             <ClassIcon token={c.className} size={34} />
             <span className="char-text">
               <span className="char-name" style={{ color: classColor(c.className) }}>
@@ -161,32 +173,7 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
           </button>
         ))}
       </nav>
-      <div className="character-detail">
-        {character.professions.length === 0 ? (
-          <p className="hint">This character has no professions yet.</p>
-        ) : (
-          <>
-            <div className="profession-tabs">
-              {character.professions.map((p) => (
-                <button
-                  key={p.name}
-                  aria-pressed={p.name === profession.name}
-                  className={p.name === profession.name ? 'active' : undefined}
-                  onClick={() => setProfName(p.name)}
-                >
-                  {p.name} <span className="muted">{`${p.skill}/${p.maxSkill}`}</span>
-                </button>
-              ))}
-            </div>
-            <ProfessionDetail key={`${character.key}/${profession.name}`} profession={profession} snapshot={snapshot} now={now} />
-          </>
-        )}
-      </div>
+      <ProfessionsDetail key={character.key} character={character} snapshot={snapshot} now={now} />
     </div>
   )
-}
-
-// Stub for the dashboard split (implemented next).
-export function ProfessionsDetail(_props: { character: import('../../shared/types').Character; snapshot: TrackerSnapshot; now: number }) {
-  return null
 }

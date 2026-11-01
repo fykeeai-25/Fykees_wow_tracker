@@ -127,3 +127,13 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .money .gold { color: #f2c94c; }
 .money .silver { color: #c9d1d9; }
 .money .copper { color: #d08a52; }
+
+.dashboard { display: flex; flex-direction: column; gap: 14px; padding: 14px; }
+.bubble { display: flex; flex-direction: column; align-items: stretch; gap: 8px; text-align: left; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+.bubble:hover { border-color: var(--accent); }
+.bubble-title { font-weight: 700; }
+.prof-summary { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.prof-summary li { display: grid; grid-template-columns: 170px 160px 1fr; align-items: center; gap: 10px; }
+.prof-next { font-size: 13px; }
+.full-head { display: flex; align-items: center; gap: 12px; }
+.full-head h2 { margin: 0; font-size: 18px; }
