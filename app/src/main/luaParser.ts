@@ -10,6 +10,16 @@ export class LuaParseError extends Error {
 
 const utf8 = new TextDecoder('utf-8')
 
+/** WoW writes SavedVariables as UTF-8 bytes; luaparse 'x-user-defined' wants one code unit per byte. */
+function toByteString(source: string): string {
+  const bytes = new TextEncoder().encode(source)
+  let out = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    out += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  }
+  return out
+}
+
 /** luaparse 'x-user-defined' maps bytes 0x80–0xFF to U+F780–U+F7FF; turn that back into UTF-8 text. */
 function decodeLuaString(value: string): string {
   const bytes = new Uint8Array(value.length)
@@ -69,7 +79,7 @@ function tableToJs(table: TableConstructorExpression): unknown {
 export function parseSavedVariables(source: string, varName = 'AzerothTrackerDB'): unknown {
   let chunk: Chunk
   try {
-    chunk = luaparse.parse(source, { luaVersion: '5.1', encodingMode: 'x-user-defined', comments: false })
+    chunk = luaparse.parse(toByteString(source), { luaVersion: '5.1', encodingMode: 'x-user-defined', comments: false })
   } catch (e) {
     throw new LuaParseError(e instanceof Error ? e.message : String(e))
   }
