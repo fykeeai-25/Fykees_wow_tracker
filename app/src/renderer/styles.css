@@ -104,3 +104,4 @@ main { flex: 1; min-height: 0; overflow: auto; }
 @media (max-width: 760px) {
   .recipe .source { display: none; }
 }
+.setup-actions { display: flex; align-items: center; gap: 16px; }

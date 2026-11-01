@@ -87,8 +87,26 @@ function character(key: string, v: Obj): Character {
 
 export const SUPPORTED_SCHEMA = 2
 
-export function rebaseTimes(snapshot: TrackerSnapshot, _now: number): TrackerSnapshot {
-  return snapshot
+/** Shifts every timestamp so the newest one equals `now` (used for demo data). */
+export function rebaseTimes(snapshot: TrackerSnapshot, now: number): TrackerSnapshot {
+  const s = structuredClone(snapshot)
+  const times: number[] = []
+  const containers = [s.accountBank, ...s.characters.flatMap((c) => [c.bags, c.bank])].filter(
+    (c): c is Container => c !== undefined
+  )
+  for (const c of s.characters) {
+    times.push(c.updatedAt)
+    for (const p of c.professions) if (p.scannedAt !== undefined) times.push(p.scannedAt)
+  }
+  for (const c of containers) times.push(c.seenAt)
+  if (times.length === 0) return s
+  const delta = now - Math.max(...times)
+  for (const c of s.characters) {
+    c.updatedAt += delta
+    for (const p of c.professions) if (p.scannedAt !== undefined) p.scannedAt += delta
+  }
+  for (const c of containers) c.seenAt += delta
+  return s
 }
 
 export class AddonNewerError extends Error {

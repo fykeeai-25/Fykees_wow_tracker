@@ -6,6 +6,7 @@ export const IPC = {
   stateChanged: 'state:changed',
   chooseGameDir: 'config:chooseGameDir',
   setAccount: 'config:setAccount',
+  useDemo: 'config:useDemo',
   getData: 'data:get',
   getWindowPrefs: 'window:getPrefs',
   setAlwaysOnTop: 'window:setAlwaysOnTop',
@@ -19,6 +20,7 @@ export interface AzerothApi {
   onState(cb: (s: AppState) => void): () => void
   chooseGameDir(): Promise<void>
   setAccount(account: string): Promise<void>
+  useDemo(): Promise<void>
   getData(): Promise<DataState>
   onData(cb: (s: DataState) => void): () => void
   getWindowPrefs(): Promise<WindowPrefs>

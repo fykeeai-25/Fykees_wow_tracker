@@ -13,7 +13,7 @@ const REASON: Record<'missing-dir' | 'missing-wtf' | 'no-accounts', string> = {
   'no-accounts': 'No WoW account found in WTF/Account. Log in to the game once, then try again.'
 }
 
-export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreenProps) {
+export function SetupScreen({ state, onChooseDir, onSelectAccount, onUseDemo }: SetupScreenProps) {
   return (
     <div className="setup">
       <h1>AzerothTracker</h1>
@@ -39,9 +39,16 @@ export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreen
             <code>D:\Games\World of Warcraft\_forever_</code>).
           </p>
           {state.phase === 'needs-game-dir' && state.reason && <p className="error">{REASON[state.reason]}</p>}
-          <button className="primary" onClick={onChooseDir}>
-            Choose game folder
-          </button>
+          <div className="setup-actions">
+            <button className="primary" onClick={onChooseDir}>
+              Choose game folder
+            </button>
+            {onUseDemo && (
+              <button className="link" onClick={onUseDemo}>
+                Try with demo data
+              </button>
+            )}
+          </div>
         </>
       )}
     </div>

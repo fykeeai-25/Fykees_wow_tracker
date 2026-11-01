@@ -11,6 +11,7 @@ const api: AzerothApi = {
   },
   chooseGameDir: () => ipcRenderer.invoke(IPC.chooseGameDir),
   setAccount: (account) => ipcRenderer.invoke(IPC.setAccount, account),
+  useDemo: () => ipcRenderer.invoke(IPC.useDemo),
   getData: () => ipcRenderer.invoke(IPC.getData),
   getWindowPrefs: () => ipcRenderer.invoke(IPC.getWindowPrefs),
   setAlwaysOnTop: (on) => ipcRenderer.invoke(IPC.setAlwaysOnTop, on),

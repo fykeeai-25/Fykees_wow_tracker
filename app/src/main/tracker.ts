@@ -5,7 +5,7 @@ import type { AppState, LoadState, TrackerSnapshot } from '../shared/types'
 import { readConfig, writeConfig } from './config'
 import { accountDir, listAccounts, savedVariablesPath, validateGameDir } from './locator'
 import { parseSavedVariables } from './luaParser'
-import { AddonNewerError, normalize } from './normalizer'
+import { AddonNewerError, normalize, rebaseTimes } from './normalizer'
 
 export type WatchFn = (file: string, onChange: () => void) => () => void
 
@@ -68,12 +68,14 @@ export function createTracker(opts: TrackerOptions): Tracker {
     watchedFile = undefined
   }
 
-  function load(file: string): LoadState {
+  function load(file: string, demo = false): LoadState {
     // The game may replace the file while saving; keep showing the last good data meanwhile.
     if (!existsSync(file)) return lastGood ? { status: 'ok', ...lastGood } : { status: 'missing' }
     try {
-      const snapshot = normalize(parseSavedVariables(readFileSync(file, 'utf8')))
-      const fileUpdatedAt = Math.floor(statSync(file).mtimeMs / 1000)
+      const nowSec = Math.floor(Date.now() / 1000)
+      const parsed = normalize(parseSavedVariables(readFileSync(file, 'utf8')))
+      const snapshot = demo ? rebaseTimes(parsed, nowSec) : parsed
+      const fileUpdatedAt = demo ? nowSec : Math.floor(statSync(file).mtimeMs / 1000)
       lastGood = { snapshot, fileUpdatedAt }
       return { status: 'ok', snapshot, fileUpdatedAt }
     } catch (e) {
@@ -104,10 +106,11 @@ export function createTracker(opts: TrackerOptions): Tracker {
       lastGood = undefined
       watchedFile = file
       unwatch = watch(file, () => {
-        if (state.phase === 'ready') emit({ ...state, load: load(file) })
+        if (state.phase === 'ready') emit({ ...state, load: load(file, state.demo) })
       })
     }
-    return { phase: 'ready', gameDir: cfg.gameDir, account, load: load(file) }
+    const demo = cfg.demo === true
+    return { phase: 'ready', gameDir: cfg.gameDir, account, demo, load: load(file, demo) }
   }
 
   function refresh(): void {
@@ -126,8 +129,9 @@ export function createTracker(opts: TrackerOptions): Tracker {
       writeConfig(opts.configFile, { ...readConfig(opts.configFile), account })
       refresh()
     },
-    useDemo() {
-      throw new Error('not implemented')
+    useDemo(demoGameDir) {
+      writeConfig(opts.configFile, { gameDir: demoGameDir, account: 'DEMO', demo: true })
+      refresh()
     },
     getState: () => state,
     stop: stopWatching

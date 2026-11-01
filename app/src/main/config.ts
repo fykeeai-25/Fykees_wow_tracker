@@ -4,6 +4,7 @@ import { dirname } from 'path'
 export interface Config {
   gameDir?: string
   account?: string
+  demo?: boolean
 }
 
 export function readConfig(file: string): Config {
@@ -15,6 +16,7 @@ export function readConfig(file: string): Config {
     const cfg: Config = {}
     if (typeof r.gameDir === 'string') cfg.gameDir = r.gameDir
     if (typeof r.account === 'string') cfg.account = r.account
+    if (r.demo === true) cfg.demo = true
     return cfg
   } catch {
     return {}

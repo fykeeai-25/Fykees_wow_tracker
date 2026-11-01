@@ -36,6 +36,7 @@ export function App() {
         state={state}
         onChooseDir={() => window.azeroth.chooseGameDir()}
         onSelectAccount={(a) => window.azeroth.setAccount(a)}
+        onUseDemo={() => window.azeroth.useDemo()}
       />
     )
   }
@@ -77,7 +78,7 @@ export function App() {
           </div>
         )}
       </main>
-      <StatusBar load={state.load} now={now} data={data} />
+      <StatusBar load={state.load} now={now} data={data} demo={state.demo} />
     </div>
     </DataProvider>
   )

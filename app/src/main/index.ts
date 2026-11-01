@@ -77,6 +77,7 @@ ipcMain.handle(IPC.chooseGameDir, async () => {
   if (!res.canceled && res.filePaths[0]) tracker.setGameDir(res.filePaths[0])
 })
 ipcMain.handle(IPC.setAccount, (_e, account: string) => tracker.setAccount(account))
+ipcMain.handle(IPC.useDemo, () => tracker.useDemo(join(resourcesDir, 'demo')))
 
 app.whenReady().then(() => {
   tracker.start()

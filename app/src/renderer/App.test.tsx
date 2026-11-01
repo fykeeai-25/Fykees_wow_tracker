@@ -19,6 +19,7 @@ beforeEach(() => {
     onState: () => () => {},
     chooseGameDir: vi.fn(async () => {}),
     setAccount: vi.fn(async () => {}),
+    useDemo: vi.fn(async () => {}),
     getData: async () => ({ pack: samplePack(4), source: 'bundled' }),
     onData: () => () => {},
     getWindowPrefs: async () => ({ alwaysOnTop: false }),
