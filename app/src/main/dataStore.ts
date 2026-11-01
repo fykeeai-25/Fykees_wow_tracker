@@ -69,8 +69,8 @@ export function createDataStore(opts: DataStoreOptions): DataStore {
     let timer: ReturnType<typeof setTimeout> | undefined
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(() => {
+        reject(new CheckError('timeout')) // settle the race before the fetch sees the abort
         ctrl.abort()
-        reject(new CheckError('timeout'))
       }, timeoutMs)
     })
     try {
