@@ -43,6 +43,23 @@ export function canCraft(rows: MaterialRow[]): { count: number; limitedBy?: stri
   return { count: 0, missing: rows.find((r) => r.total < r.perCraft)?.name }
 }
 
+/** Where an item is: every character's bags and bank, then the account bank (count > 0 only). */
+export function itemSources(itemId: number, snapshot: TrackerSnapshot, now: number): MaterialSource[] {
+  const sources: MaterialSource[] = []
+  const add = (c: Container | undefined, src: Omit<MaterialSource, 'count' | 'seenAt' | 'stale'>): void => {
+    const count = c?.items[itemId] ?? 0
+    if (!c || count <= 0) return
+    sources.push({ ...src, count, seenAt: c.seenAt, stale: now - c.seenAt > STALE_AFTER_SECONDS })
+  }
+  for (const ch of snapshot.characters) {
+    const who = { characterKey: ch.key, characterName: ch.name }
+    add(ch.bags, { container: 'bags', ...who })
+    add(ch.bank, { container: 'bank', ...who })
+  }
+  add(snapshot.accountBank, { container: 'accountBank' })
+  return sources
+}
+
 export function materialAvailability(
   reagents: Reagent[],
   snapshot: TrackerSnapshot,
@@ -51,19 +68,7 @@ export function materialAvailability(
   multiplier = 1
 ): MaterialRow[] {
   return reagents.map((r) => {
-    const sources: MaterialSource[] = []
-    const add = (c: Container | undefined, src: Omit<MaterialSource, 'count' | 'seenAt' | 'stale'>): void => {
-      const count = c?.items[r.itemId] ?? 0
-      if (!c || count <= 0) return
-      sources.push({ ...src, count, seenAt: c.seenAt, stale: now - c.seenAt > STALE_AFTER_SECONDS })
-    }
-    for (const ch of snapshot.characters) {
-      const who = { characterKey: ch.key, characterName: ch.name }
-      add(ch.bags, { container: 'bags', ...who })
-      add(ch.bank, { container: 'bank', ...who })
-    }
-    add(snapshot.accountBank, { container: 'accountBank' })
-
+    const sources = itemSources(r.itemId, snapshot, now)
     const needed = r.count * multiplier
     const total = sources.reduce((sum, s) => sum + s.count, 0)
     return { itemId: r.itemId, name: itemName(r.itemId, snapshot, items), perCraft: r.count, needed, total, enough: total >= needed, sources }
