@@ -23,6 +23,7 @@ describe('ProfessionsView', () => {
     expect(within(thrall).getByText('Lv 24 Shaman · Firemaw')).toBeTruthy()
     expect((within(thrall).getByText('Thrall') as HTMLElement).style.color).toBe('rgb(0, 112, 221)')
     expect(screen.getByRole('button', { name: /Jaina/ })).toBeTruthy()
+    expect(within(thrall).getByRole('img', { name: 'Shaman icon' })).toBeTruthy()
   })
 
   it('shows Alchemy skill and recipe sections', () => {
