@@ -73,6 +73,15 @@ describe('ProfessionsView', () => {
     expect(screen.getByText("Jaina's bank isn't scanned. Open it in game, then /reload.")).toBeTruthy()
   })
 
+  it('several unscanned banks are listed in one line', () => {
+    const s = fixtureSnapshot()
+    s.characters.push({ ...s.characters[0], key: 'Firemaw-Brakk', name: 'Brakk' })
+    render(withData(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />))
+    fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
+    fireEvent.click(within(screen.getByRole('region', { name: 'Known' })).getByText('Minor Healing Potion'))
+    expect(screen.getByText('Banks not scanned yet: Jaina, Brakk. Open them in game, then /reload.')).toBeTruthy()
+  })
+
   it('quantity scales needed amounts', () => {
     openThrall('Alchemy')
     fireEvent.click(screen.getByText('Minor Healing Potion'))
