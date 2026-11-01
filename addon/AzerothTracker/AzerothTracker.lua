@@ -209,6 +209,14 @@ end
 local scanTradeSkillThrottled = throttled(scanTradeSkill)
 local scanCraftThrottled = throttled(scanCraft)
 
+-- On a fresh client many reagent items are not cached yet; when their info
+-- arrives, rescan the open profession window so skipped recipes get stored.
+local tradeOpen, craftOpen = false, false
+local function onItemInfo()
+  if tradeOpen then scanTradeSkillThrottled() end
+  if craftOpen then scanCraftThrottled() end
+end
+
 -- ------------------------------------------------------------ inventory
 
 local function numSlots(bag)
@@ -312,10 +320,19 @@ local handlers = {
   end,
   PLAYER_LEVEL_UP = updateBasics,
   SKILL_LINES_CHANGED = updateProfessions,
-  TRADE_SKILL_SHOW = scanTradeSkillThrottled,
+  TRADE_SKILL_SHOW = function()
+    tradeOpen = true
+    scanTradeSkillThrottled()
+  end,
   TRADE_SKILL_UPDATE = scanTradeSkillThrottled,
-  CRAFT_SHOW = scanCraftThrottled,
+  TRADE_SKILL_CLOSE = function() tradeOpen = false end,
+  CRAFT_SHOW = function()
+    craftOpen = true
+    scanCraftThrottled()
+  end,
   CRAFT_UPDATE = scanCraftThrottled,
+  CRAFT_CLOSE = function() craftOpen = false end,
+  GET_ITEM_INFO_RECEIVED = onItemInfo,
   BAG_UPDATE = scheduleBagScan,
   BAG_UPDATE_DELAYED = scheduleBagScan,
   BANKFRAME_OPENED = function()

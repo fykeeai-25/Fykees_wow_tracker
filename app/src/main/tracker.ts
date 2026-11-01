@@ -88,7 +88,9 @@ export function createTracker(opts: TrackerOptions): Tracker {
   }
 
   function resolve(): AppState {
-    const cfg = readConfig(opts.configFile)
+    const stored = readConfig(opts.configFile)
+    // Demo data ships inside the app; its folder can move between builds (portable exe).
+    const cfg = stored.demo && opts.demoGameDir ? { ...stored, gameDir: opts.demoGameDir } : stored
     if (!cfg.gameDir) return { phase: 'needs-game-dir' }
     const check = validateGameDir(cfg.gameDir)
     if (!check.ok) return { phase: 'needs-game-dir', reason: check.reason }

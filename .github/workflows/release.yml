@@ -19,7 +19,7 @@ jobs:
           node-version: 22
       - name: Install
         shell: bash
-        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund || npm install --no-audit --no-fund; else npm install --no-audit --no-fund; fi
       - name: Test
         run: npm test
       - name: Build Windows app

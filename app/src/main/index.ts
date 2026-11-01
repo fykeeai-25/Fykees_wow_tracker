@@ -9,6 +9,7 @@ import { isWowheadUrl } from '../shared/wowhead'
 let win: BrowserWindow | undefined
 
 const tracker = createTracker({
+  demoGameDir: join(app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'resources'), 'demo'),
   configFile: join(app.getPath('userData'), 'config.json'),
   onState: (s) => win?.webContents.send(IPC.stateChanged, s)
 })
