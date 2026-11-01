@@ -29,12 +29,31 @@ beforeEach(() => {
   ;(window as unknown as { azeroth: AzerothApi }).azeroth = api
 })
 
-describe('App modules', () => {
-  it('shows the Professions and Alts tabs', async () => {
+describe('App dashboard layout', () => {
+  it('shows characters, bubbles and search together', async () => {
     render(<App />)
-    expect(await screen.findByRole('button', { name: 'Professions' })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Alts' }))
     expect(await screen.findByLabelText('Find item')).toBeTruthy()
+    expect(screen.getByRole('complementary', { name: 'Characters' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Professions/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Alts' })).toBeNull()
+  })
+
+  it('selecting a character changes the bubbles', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Thrall/ }))
+    expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('Alchemy 142/150')
+    fireEvent.click(screen.getByRole('button', { name: /Jaina/ }))
+    expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('No professions yet.')
+  })
+
+  it('top bar shows status and data version; search toggle flips aria-expanded', async () => {
+    render(<App />)
+    const toggle = await screen.findByRole('button', { name: 'Toggle search' })
+    expect(screen.getByRole('banner').textContent).toContain('Updated')
+    expect(screen.getByRole('banner').textContent).toContain('Data v4')
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
   })
 })
 
@@ -53,6 +72,7 @@ describe('App settings popover', () => {
   it('opens Wowhead for a recipe', async () => {
     render(<App />)
     fireEvent.click(await screen.findByRole('button', { name: /Thrall/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Professions/ }))
     fireEvent.click(screen.getAllByRole('button', { name: 'Open Minor Healing Potion on Wowhead' })[0])
     expect(api.openWowhead).toHaveBeenCalledWith('https://www.wowhead.com/forever/spell=2330')
   })

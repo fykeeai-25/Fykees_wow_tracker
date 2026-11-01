@@ -28,9 +28,9 @@ describe('StatusBar age', () => {
   it('turns amber when the last reload is older than 30 minutes', () => {
     const load = { status: 'ok' as const, snapshot: { schemaVersion: 2, characters: [], itemNames: {} }, fileUpdatedAt: 1000 }
     const { container, rerender } = render(<StatusBar load={load} now={1000 + 600} />)
-    expect(container.querySelector('footer')!.className).not.toContain('old')
+    expect(container.querySelector('.status')!.className).not.toContain('old')
     rerender(<StatusBar load={load} now={1000 + 7200} />)
-    expect(container.querySelector('footer')!.className).toContain('old')
+    expect(container.querySelector('.status')!.className).toContain('old')
     expect(screen.getByText('Last /reload 2 h ago')).toBeTruthy()
   })
 })
