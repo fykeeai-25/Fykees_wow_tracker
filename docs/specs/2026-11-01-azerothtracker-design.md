@@ -52,8 +52,9 @@ se přidají podle toho, jak hra po vydání (4. 11. 2026) skutečně vypadá.
 - **Main proces:**
   - `config`: uloží zvolenou herní složku a účet (soubor v userData).
   - `savedVariablesLocator`: z herní složky odvodí cestu
-    `WTF/Account/<účet>/SavedVariables/AzerothTracker.lua` pro všechny účty ve složce
-    a data ze všech účtů sloučí.
+    `WTF/Account/<účet>/SavedVariables/AzerothTracker.lua`. Aplikace pracuje vždy s jedním
+    účtem. Když jich ve složce najde víc, nechá uživatele jeden vybrat a volba jde
+    změnit v nastavení. Data z více účtů se neslučují.
   - `watcher`: sleduje soubor a při změně ho znovu načte.
   - `luaParser`: převede Lua tabulku `AzerothTrackerDB` na JSON.
   - `normalizer`: z JSON vytvoří doménový model (Character, Profession, Recipe, Inventory).
