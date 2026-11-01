@@ -1,0 +1,105 @@
+-- Runs AzerothTracker.lua against a minimal mocked WoW Classic API, fires a
+-- login / profession window / bank sequence and prints AzerothTrackerDB in
+-- SavedVariables format to stdout. Usage: lua5.1 harness.lua <AzerothTracker.lua>
+
+local function link(id, name) return "|cffffffff|Hitem:" .. id .. "::::::::|h[" .. name .. "]|h|r" end
+
+time = function() return 1761980000 end
+GetRealmName = function() return "Firemaw" end
+UnitName = function() return "Thrall" end
+UnitRace = function() return "Orc", "Orc" end
+UnitClass = function() return "Shaman", "SHAMAN" end
+UnitLevel = function() return 24 end
+print = function(...) io.stderr:write(table.concat({ ... }, " "), "\n") end
+
+TRADE_SKILLS = "Professions"
+SECONDARY_SKILLS = "Secondary Skills"
+local skillLines = {
+  { "Professions", true, true },
+  { "Alchemy", false, false, 142, 150 },
+  { "Herbalism", false, false, 160, 225 },
+  { "Secondary Skills", true, true },
+  { "Cooking", false, false, 50, 75 },
+  { "Weapon Skills", true, true },
+  { "Swords", false, false, 100, 120 },
+}
+GetNumSkillLines = function() return #skillLines end
+GetSkillLineInfo = function(i)
+  local l = skillLines[i]
+  return l[1], l[2], l[3], l[4], 0, 0, l[5]
+end
+
+local recipes = {
+  { "Potions", "header" },
+  { "Minor Healing Potion", "trivial", { { 2447, "Peacebloom", 1 }, { 2449, "Earthroot", 1 } } },
+  { "Elixir of Lion's Strength", "trivial", { { 2449, "Earthroot", 1 }, { 765, "Silverleaf", 1 } } },
+}
+GetTradeSkillLine = function() return "Alchemy", 142, 150 end
+GetNumTradeSkills = function() return #recipes end
+GetTradeSkillInfo = function(i) return recipes[i][1], recipes[i][2] end
+GetTradeSkillNumReagents = function(i) return recipes[i][3] and #recipes[i][3] or 0 end
+GetTradeSkillReagentInfo = function(i, r) local x = recipes[i][3][r] return x[2], "icon", x[3], 0 end
+GetTradeSkillReagentItemLink = function(i, r) local x = recipes[i][3][r] return link(x[1], x[2]) end
+GetCraftDisplaySkillLine = function() return nil end
+
+local containers = {
+  [0] = { { 2447, "Peacebloom", 4 }, { 2449, "Earthroot", 2 } },
+  [-1] = { { 2447, "Peacebloom", 8 } },
+}
+GetContainerNumSlots = function(bag) return containers[bag] and #containers[bag] or 0 end
+GetContainerItemInfo = function(bag, slot)
+  local x = containers[bag] and containers[bag][slot]
+  if not x then return nil end
+  return "icon", x[3], false, 1, false, false, link(x[1], x[2]), false, false, x[1]
+end
+
+local frames = {}
+CreateFrame = function()
+  local f = { events = {} }
+  function f:SetScript(_, fn) self.handler = fn end
+  function f:RegisterEvent(e) self.events[e] = true end
+  frames[#frames + 1] = f
+  return f
+end
+SlashCmdList = {}
+
+local chunk = assert(loadfile(arg[1]))
+chunk("AzerothTracker")
+
+local function fire(event, ...)
+  for _, f in ipairs(frames) do
+    if f.events[event] and f.handler then f.handler(f, event, ...) end
+  end
+end
+fire("ADDON_LOADED", "AzerothTracker")
+fire("PLAYER_LOGIN")
+fire("TRADE_SKILL_SHOW")
+fire("BANKFRAME_OPENED")
+fire("BAG_UPDATE", 0)
+fire("BANKFRAME_CLOSED")
+fire("PLAYER_LOGOUT")
+SlashCmdList["AZEROTHTRACKER"]("")
+
+-- Serializer in the style WoW uses for SavedVariables.
+local function serialize(v, indent)
+  local t = type(v)
+  if t == "string" then return string.format("%q", v) end
+  if t ~= "table" then return tostring(v) end
+  local pad = string.rep("\t", indent + 1)
+  local out = { "{\n" }
+  local n = #v
+  for i = 1, n do out[#out + 1] = pad .. serialize(v[i], indent + 1) .. ", -- [" .. i .. "]\n" end
+  local keys = {}
+  for k in pairs(v) do
+    if not (type(k) == "number" and k >= 1 and k <= n and k == math.floor(k)) then keys[#keys + 1] = k end
+  end
+  table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+  for _, k in ipairs(keys) do
+    local key = type(k) == "string" and string.format("[%q]", k) or "[" .. tostring(k) .. "]"
+    out[#out + 1] = pad .. key .. " = " .. serialize(v[k], indent + 1) .. ",\n"
+  end
+  out[#out + 1] = string.rep("\t", indent) .. "}"
+  return table.concat(out)
+end
+
+io.write("\nAzerothTrackerDB = ", serialize(AzerothTrackerDB, 0), "\n")
