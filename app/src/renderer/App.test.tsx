@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react'
 import { App } from './App'
 import { fixtureSnapshot, samplePack } from '../../test/snapshot'
 import type { AzerothApi } from '../shared/ipc'
+import type { AppState } from '../shared/types'
 
 afterEach(cleanup)
 
@@ -44,6 +45,31 @@ describe('App dashboard layout', () => {
     expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('Alchemy 142/150')
     fireEvent.click(screen.getByRole('button', { name: /Jaina/ }))
     expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('No professions yet.')
+  })
+
+  it('falls back to the first character when the selected one disappears', async () => {
+    let push: ((s: AppState) => void) | undefined
+    api.onState = (cb) => {
+      push = cb
+      return () => {}
+    }
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Thrall/ }))
+    const snap = fixtureSnapshot()
+    snap.characters = snap.characters.filter((c) => c.name !== 'Thrall')
+    act(() => push!({ phase: 'ready', gameDir: 'D:\\x', account: 'ACC1', load: { status: 'ok', snapshot: snap, fileUpdatedAt: 1 } }))
+    expect(screen.getByRole('button', { name: /Jaina/ }).getAttribute('aria-current')).toBe('true')
+    expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('No professions yet.')
+  })
+
+  it('opening search focuses the input; Escape returns focus to the toggle', async () => {
+    render(<App />)
+    const toggle = await screen.findByRole('button', { name: 'Toggle search' })
+    fireEvent.click(toggle)
+    expect(document.activeElement).toBe(screen.getByLabelText('Find item'))
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    expect(document.activeElement).toBe(toggle)
   })
 
   it('top bar shows status and data version; search toggle flips aria-expanded', async () => {

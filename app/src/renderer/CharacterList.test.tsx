@@ -28,4 +28,20 @@ describe('CharacterList', () => {
     fireEvent.click(screen.getByRole('button', { name: /Jaina/ }))
     expect(onSelect).toHaveBeenCalledWith('Firemaw-Jaina')
   })
+
+  it('currency short names carry the full name as a tooltip', () => {
+    render(<CharacterList snapshot={fixtureSnapshot()} now={FIXTURE_NOW} onSelect={vi.fn()} />)
+    const thrall = screen.getByRole('button', { name: /Thrall/ })
+    expect(within(thrall).getByTitle("Merchant's Favor").textContent).toBe('MF 7')
+  })
+
+  it('a character without money does not change the total; 0 copper shows 0c', () => {
+    const s = fixtureSnapshot()
+    s.characters[0].money = 0
+    s.characters.push({ ...s.characters[1], key: 'Firemaw-Brakk', name: 'Brakk', money: undefined, currencies: undefined })
+    render(<CharacterList snapshot={s} now={FIXTURE_NOW} onSelect={vi.fn()} />)
+    expect(screen.getByRole('button', { name: /Jaina/ }).textContent).toContain('Lv 10 · 0c')
+    expect(screen.getByRole('button', { name: /Brakk/ }).textContent).toContain('Lv 24seen')
+    expect(screen.getByRole('contentinfo', { name: 'Total' }).textContent).toContain('12g 34s 56c')
+  })
 })
