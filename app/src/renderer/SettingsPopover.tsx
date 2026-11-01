@@ -4,6 +4,7 @@ export interface SettingsPopoverProps {
   gameDir: string
   account: string
   onClose(): void
+  diagnostics?: import('../shared/types').Diagnostics
 }
 
 export function SettingsPopover({ gameDir, account, onClose }: SettingsPopoverProps) {

@@ -49,8 +49,21 @@ export interface Character {
   currencies?: Record<string, number>
 }
 
+export interface Diagnostics {
+  build: string
+  buildNumber: string
+  interface: number
+  addonVersion: string
+  checkedAt: number
+  /** WoW API functions the addon looked for but the client does not have */
+  missing: string[]
+  /** global names containing "Legacy" (discovery for the Legacy planner) */
+  legacyApis: string[]
+}
+
 export interface TrackerSnapshot {
   schemaVersion: number
+  diagnostics?: Diagnostics
   characters: Character[]
   accountBank?: Container
   itemNames: Record<number, string>

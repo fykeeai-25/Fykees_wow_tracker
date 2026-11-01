@@ -1,6 +1,18 @@
 
 AzerothTrackerDB = {
 	["schemaVersion"] = 3,
+	["diagnostics"] = {
+		["build"] = "1.60.1",
+		["buildNumber"] = "70058",
+		["interface"] = 11600,
+		["addonVersion"] = "0.1.0",
+		["checkedAt"] = 1761980000,
+		["missing"] = {
+			"GetCraftRecipeLink", -- [1]
+		},
+		["legacyApis"] = {
+		},
+	},
 	["itemNames"] = {
 		[2447] = "Peacebloom",
 		[2449] = "Earthroot",
@@ -49,7 +61,3 @@ AzerothTrackerDB = {
 									["count"] = 1,
 								}, -- [2]
 							},
-						},
-					},
-				},
-				["Herbalism"] = {

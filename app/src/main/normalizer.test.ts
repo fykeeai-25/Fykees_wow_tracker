@@ -104,6 +104,18 @@ describe('normalize', () => {
     expect(s.characters[0].currencies).toEqual({ Favor: 3 })
   })
 
+  it('reads client diagnostics', () => {
+    expect(normalize(raw()).diagnostics).toEqual({
+      build: '1.60.1',
+      buildNumber: '70058',
+      interface: 11600,
+      addonVersion: '0.1.0',
+      checkedAt: 1761980000,
+      missing: ['GetCraftRecipeLink'],
+      legacyApis: []
+    })
+  })
+
   it('rejects old schemaVersion', () => {
     expect(() => normalize({ schemaVersion: 2 })).toThrow('Unsupported schemaVersion 2')
   })

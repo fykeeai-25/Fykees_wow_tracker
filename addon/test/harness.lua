@@ -11,6 +11,8 @@ UnitRace = function() return "Orc", "Orc" end
 UnitClass = function() return "Shaman", "SHAMAN" end
 UnitLevel = function() return 24 end
 GetMoney = function() return 123456 end
+GetBuildInfo = function() return "1.60.1", "70058", "Oct 1 2026", 11600 end
+C_LegacyTree = { GetPoints = function() return 9 end }
 currencyRows = {
   { name = "Forever", isHeader = true, isHeaderExpanded = true },
   { name = "Merchant's Favor", isHeader = false, quantity = 7, currencyTypesID = 3101 },
