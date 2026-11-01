@@ -4,6 +4,7 @@ import { classifyRecipes, type Difficulty, type RecipeView } from '../../shared/
 import { wowheadItemUrl, wowheadSpellUrl } from '../../shared/wowhead'
 import { useGameData } from '../DataContext'
 import { classColor, className } from '../classColors'
+import { ClassIcon } from '../ClassIcon'
 import { MaterialsPanel } from './MaterialsPanel'
 import { sourceText } from './format'
 import { WowheadLink } from './WowheadLink'
@@ -150,10 +151,13 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
               setProfName(undefined)
             }}
           >
-            <span className="char-name" style={{ color: classColor(c.className) }}>
-              {c.name}
+            <ClassIcon token={c.className} size={34} />
+            <span className="char-text">
+              <span className="char-name" style={{ color: classColor(c.className) }}>
+                {c.name}
+              </span>
+              <span className="char-line muted">{`Lv ${c.level} ${className(c.className)} · ${c.realm}`}</span>
             </span>
-            <span className="char-line muted">{`Lv ${c.level} ${className(c.className)} · ${c.realm}`}</span>
           </button>
         ))}
       </nav>

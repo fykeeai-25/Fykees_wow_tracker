@@ -43,7 +43,9 @@ main { flex: 1; min-height: 0; overflow: auto; }
 
 .professions { display: grid; grid-template-columns: 220px minmax(0, 1fr); height: 100%; }
 .characters { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-right: 1px solid var(--border); background: var(--panel); }
-.characters button { text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.characters button { text-align: left; display: flex; align-items: center; gap: 10px; }
+.char-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.class-icon { flex: none; }
 .char-name { font-weight: 700; }
 .char-line { font-size: 13px; }
 .character-detail { padding: 12px 16px; overflow: auto; }
