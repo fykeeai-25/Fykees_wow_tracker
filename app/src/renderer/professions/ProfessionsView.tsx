@@ -162,12 +162,11 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
           <p className="hint">This character has no professions yet.</p>
         ) : (
           <>
-            <div className="profession-tabs" role="tablist">
+            <div className="profession-tabs">
               {character.professions.map((p) => (
                 <button
                   key={p.name}
-                  role="tab"
-                  aria-selected={p.name === profession.name}
+                  aria-pressed={p.name === profession.name}
                   className={p.name === profession.name ? 'active' : undefined}
                   onClick={() => setProfName(p.name)}
                 >

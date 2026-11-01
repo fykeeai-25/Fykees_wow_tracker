@@ -31,7 +31,6 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
 .topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
 .brand { font-weight: 700; color: var(--accent); }
 .tabs { display: flex; gap: 6px; flex: 1; }
-.settings { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel-2); border-bottom: 1px solid var(--border); }
 main { flex: 1; min-height: 0; overflow: auto; }
 .status { display: flex; justify-content: space-between; gap: 12px; padding: 6px 16px; background: var(--panel); border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
 .status.warn { color: var(--bad); }
