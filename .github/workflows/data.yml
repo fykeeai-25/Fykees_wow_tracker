@@ -1,0 +1,28 @@
+name: Game data
+on:
+  push:
+    branches: ['main']
+    paths: ['data/**', 'app/scripts/data-pack.mjs', 'app/scripts/build-data-pack.mjs']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build data pack
+        run: node app/scripts/build-data-pack.mjs data out/data-pack.json ${{ github.run_number }}
+      - name: Checksum
+        working-directory: out
+        run: sha256sum data-pack.json | cut -d' ' -f1 > data-pack.json.sha256
+      - name: Publish to the data-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view data-latest > /dev/null 2>&1 || \
+            gh release create data-latest --prerelease --title "Game data" --notes "Game data pack, published automatically when data/ changes on main."
+          gh release upload data-latest out/data-pack.json out/data-pack.json.sha256 --clobber

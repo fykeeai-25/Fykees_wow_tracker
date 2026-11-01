@@ -5,6 +5,9 @@ directories:
 files:
   - out/**
   - package.json
+extraResources:
+  - from: resources
+    to: .
 win:
   target: portable
   artifactName: AzerothTracker-${version}.exe

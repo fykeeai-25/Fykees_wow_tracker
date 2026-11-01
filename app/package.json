@@ -10,8 +10,11 @@
     "build": "electron-vite build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "dist:win": "electron-vite build && electron-builder --win portable --publish never",
-    "check:addon": "node scripts/check-addon.mjs"
+    "dist:win": "npm run data:pack && electron-vite build && electron-builder --win portable --publish never",
+    "check:addon": "node scripts/check-addon.mjs",
+    "data:pack": "node scripts/build-data-pack.mjs ../data resources/data-pack.json 0",
+    "predev": "npm run data:pack",
+    "prebuild": "npm run data:pack"
   },
   "dependencies": {
     "chokidar": "^4.0.3",
