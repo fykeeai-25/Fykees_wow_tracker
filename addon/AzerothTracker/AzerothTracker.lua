@@ -70,16 +70,30 @@ local function updateMoney()
 end
 
 -- Currencies (e.g. Merchant's Favor), only if this client has the currency API.
+-- Rows under a collapsed header are not listed, so visible rows are merged in and a
+-- currency is removed only when every header is expanded; an empty list changes nothing.
 local function updateCurrencies()
   if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyListSize and C_CurrencyInfo.GetCurrencyListInfo) then return end
-  local list = {}
-  for i = 1, C_CurrencyInfo.GetCurrencyListSize() do
+  local size = C_CurrencyInfo.GetCurrencyListSize() or 0
+  if size == 0 then return end
+  local c = getChar()
+  local list = c.currencies or {}
+  local seen, allExpanded = {}, true
+  for i = 1, size do
     local info = C_CurrencyInfo.GetCurrencyListInfo(i)
-    if info and not info.isHeader and info.name then
+    if info and info.isHeader then
+      if info.isHeaderExpanded == false then allExpanded = false end
+    elseif info and info.name then
       list[info.name] = { id = info.currencyTypesID or info.currencyID, count = info.quantity or 0 }
+      seen[info.name] = true
     end
   end
-  getChar().currencies = list
+  if allExpanded then
+    for name in pairs(list) do
+      if not seen[name] then list[name] = nil end
+    end
+  end
+  c.currencies = list
 end
 
 -- Professions and their skill from the skill panel (primary + secondary).
