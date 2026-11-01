@@ -29,6 +29,15 @@ beforeEach(() => {
   ;(window as unknown as { azeroth: AzerothApi }).azeroth = api
 })
 
+describe('App modules', () => {
+  it('shows the Professions and Alts tabs', async () => {
+    render(<App />)
+    expect(await screen.findByRole('button', { name: 'Professions' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Alts' }))
+    expect(await screen.findByLabelText('Find item')).toBeTruthy()
+  })
+})
+
 describe('App settings popover', () => {
   it('opens from the gear, toggles always-on-top and closes on Escape', async () => {
     render(<App />)
