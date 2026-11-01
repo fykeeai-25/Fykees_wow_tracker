@@ -10,12 +10,13 @@ export class LuaParseError extends Error {
 
 const utf8 = new TextDecoder('utf-8')
 
-/** WoW writes SavedVariables as UTF-8 bytes; luaparse 'x-user-defined' wants one code unit per byte. */
+/** WoW writes SavedVariables as UTF-8 bytes; luaparse 'x-user-defined' wants bytes 0x80–0xFF as U+F780–U+F7FF. */
 function toByteString(source: string): string {
   const bytes = new TextEncoder().encode(source)
   let out = ''
   for (let i = 0; i < bytes.length; i += 0x8000) {
-    out += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+    const chunk = Array.from(bytes.subarray(i, i + 0x8000), (b) => (b >= 0x80 ? 0xf700 + b : b))
+    out += String.fromCharCode(...chunk)
   }
   return out
 }
