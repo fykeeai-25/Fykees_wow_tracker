@@ -97,15 +97,7 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .recipe .req, .recipe .source { white-space: nowrap; }
 .character-detail, .recipe-columns { min-width: 0; }
-@media (max-width: 1000px) {
-  .professions { grid-template-columns: 170px minmax(0, 1fr); }
-  .profession-body { grid-template-columns: minmax(0, 1fr); }
-  .materials { position: static; }
-  .recipe .source { min-width: 0; }
-}
-@media (max-width: 760px) {
-  .recipe .source { display: none; }
-}
+
 .setup-actions { display: flex; align-items: center; gap: 16px; }
 
 .alts { padding: 16px; display: flex; flex-direction: column; gap: 18px; max-width: 1000px; }
@@ -160,4 +152,15 @@ main { flex: 1; min-height: 0; overflow: auto; }
   .search-toggle { display: inline-block; }
   .layout.search-open .search-column { display: block; position: absolute; top: 0; right: 0; bottom: 0; width: 300px; background: var(--bg); box-shadow: -8px 0 24px rgba(0,0,0,0.45); z-index: 5; }
   .prof-summary li { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* Professions full view adapts to the width of the centre column, not the window. */
+.center { container-type: inline-size; }
+@container (max-width: 860px) {
+  .profession-body { grid-template-columns: minmax(0, 1fr); }
+  .materials { position: static; }
+  .recipe .source { min-width: 0; }
+}
+@container (max-width: 560px) {
+  .recipe .source { display: none; }
 }
