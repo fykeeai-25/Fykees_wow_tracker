@@ -45,9 +45,12 @@ describe('ProfessionsView', () => {
 
   it('marks the selected recipe', () => {
     openThrall('Alchemy')
-    fireEvent.click(screen.getByText('Minor Healing Potion'))
-    const row = screen.getByText('Minor Healing Potion').closest('button')!
+    const known = screen.getByRole('region', { name: 'Known' })
+    fireEvent.click(within(known).getByText('Minor Healing Potion'))
+    const row = within(known).getByText('Minor Healing Potion').closest('button')!
     expect(row.getAttribute('aria-current')).toBe('true')
+    const other = within(screen.getByRole('region', { name: 'Learnable now' })).getByText('Swiftness Potion').closest('button')!
+    expect(other.getAttribute('aria-current')).toBeNull()
   })
 
   it('opens materials across characters with stale bank', () => {
