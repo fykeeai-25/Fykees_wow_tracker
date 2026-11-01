@@ -106,10 +106,13 @@ describe.skipIf(!lua)('addon → app contract', () => {
   it('writes client diagnostics: build, interface, missing APIs, Legacy APIs', () => {
     const d = run().diagnostics!
     expect(d).toMatchObject({ build: '1.60.1', buildNumber: '70058', interface: 11600, addonVersion: '0.1.0', checkedAt: 1761980000 })
-    expect(d.missing).toContain('GetCraftRecipeLink')
-    expect(d.missing).toContain('C_Container.GetContainerItemInfo')
-    expect(d.missing).not.toContain('GetMoney')
+    // alternatives count as available (legacy container API, GetCraftItemLink for recipe links)
+    expect(d.missing).toEqual([])
     expect(d.legacyApis).toEqual(['C_LegacyTree'])
+  })
+
+  it('reports a missing API in diagnostics', () => {
+    expect(run('no-currency-api').diagnostics!.missing).toEqual(['C_CurrencyInfo.GetCurrencyListSize'])
   })
 
   it('writes no currencies when the client has no currency API', () => {
