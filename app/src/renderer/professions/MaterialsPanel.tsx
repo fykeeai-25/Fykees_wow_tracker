@@ -65,9 +65,12 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, items, now }: M
           </ul>
         </div>
       ))}
-      {unscanned.map((u) => (
-        <p key={u.characterKey} className="muted unscanned">{`${u.characterName}'s bank isn't scanned. Open it in game, then /reload.`}</p>
-      ))}
+      {unscanned.length === 1 && (
+        <p className="muted unscanned">{`${unscanned[0].characterName}'s bank isn't scanned. Open it in game, then /reload.`}</p>
+      )}
+      {unscanned.length > 1 && (
+        <p className="muted unscanned">{`Banks not scanned yet: ${unscanned.map((u) => u.characterName).join(', ')}. Open them in game, then /reload.`}</p>
+      )}
     </section>
   )
 }
