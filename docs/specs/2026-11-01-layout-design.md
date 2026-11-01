@@ -1,7 +1,7 @@
 # AzerothTracker – dashboard layout design
 
 Date: 2026-11-01
-Status: approved in chat (mockup `layout.png`; answers: search hides under a magnifier below 1000 px; all bubbles are quick summaries that open a full view on click)
+Status: implemented 2026-11-01; approved in chat (mockup `layout.png`; answers: search hides under a magnifier below 1000 px; all bubbles are quick summaries that open a full view on click)
 
 ## Layout
 

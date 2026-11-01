@@ -9,8 +9,13 @@ addon collects in game.
 
 ## Modules
 
-- **Professions** – known / learnable recipes with difficulty, materials across all characters' bags and banks.
-- **Alts** – find any item across all characters ("where is my item?"), gold and currencies per character with totals.
+The window has three columns: **characters** on the left (level, gold, currencies, last seen,
+totals), **bubbles** in the middle (a quick summary each; click opens the full view) and
+**item search** on the right (hidden under 🔍 on narrow windows).
+
+- **Professions** bubble – skill per profession and what can be learned; full view with recipes,
+  difficulty and materials across all characters' bags and banks.
+- **Item search** – "where is my item?" across all characters, banks and the account bank.
 
 ## Layout
 
