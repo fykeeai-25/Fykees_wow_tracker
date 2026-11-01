@@ -35,9 +35,14 @@ se přidají podle toho, jak hra po vydání (4. 11. 2026) skutečně vypadá.
   - základní info o postavě (jméno, realm, rasa, třída, level),
   - profese: název, aktuální a maximální skill,
   - naučené recepty včetně materiálů; zachytí je při otevření okna profese,
-  - obsah tašek; obsah banky jen při otevřené bance.
+  - obsah tašek; obsah banky jen při otevřené bance,
+  - obsah banky sdílené celým účtem (pokud ji Forever má) při jejím otevření;
+    ukládá se zvlášť, ne pod konkrétní postavu.
 - Ukládá i čas poslední aktualizace každé části.
-- Omezení hry: soubor se na disk zapisuje jen při `/reload`, odhlášení nebo ukončení hry.
+- Omezení hry: soubor se na disk zapisuje jen při `/reload`, odhlášení (včetně přepnutí
+  postavy) nebo ukončení hry. Načítací obrazovka při změně zóny ho nezapisuje.
+- Soubor je společný pro celý WoW účet, takže uchovává data všech postav z jejich
+  posledního přihlášení.
 - Názvy API funkcí pro Forever se ověří po vydání. Classic používá pro Enchanting
   jiné API (Craft) než pro ostatní profese (TradeSkill), addon musí zvládnout obě.
 
@@ -47,7 +52,8 @@ se přidají podle toho, jak hra po vydání (4. 11. 2026) skutečně vypadá.
 - **Main proces:**
   - `config`: uloží zvolenou herní složku a účet (soubor v userData).
   - `savedVariablesLocator`: z herní složky odvodí cestu
-    `WTF/Account/<účet>/SavedVariables/AzerothTracker.lua`. Když najde víc účtů, nabídne výběr.
+    `WTF/Account/<účet>/SavedVariables/AzerothTracker.lua` pro všechny účty ve složce
+    a data ze všech účtů sloučí.
   - `watcher`: sleduje soubor a při změně ho znovu načte.
   - `luaParser`: převede Lua tabulku `AzerothTrackerDB` na JSON.
   - `normalizer`: z JSON vytvoří doménový model (Character, Profession, Recipe, Inventory).
@@ -68,8 +74,11 @@ se přidají podle toho, jak hra po vydání (4. 11. 2026) skutečně vypadá.
 1. **Přehled postav:** všechny postavy z SavedVariables, jejich profese a skill (např. 142/150).
 2. **Recepty:** naučené, dostupné hned a dostupné po nejbližším zvýšení skillu,
    s barvou obtížnosti podle aktuálního skillu.
-3. **Materiály:** u vybraného receptu kolik čeho je potřeba a kolik toho má postava
-   v taškách a bance (s časem, kdy byla banka naposledy viděna).
+3. **Materiály napříč postavami:** u vybraného receptu kolik čeho je potřeba a kolik
+   toho je k dispozici celkem, s rozpisem podle zdroje: postava × (taška / banka)
+   a banka účtu. U každého zdroje je čas, kdy byl naposledy viděn.
+   Příklad: „Peacebloom 12 = Fykee taška 4 + Alt banka 8 (viděno včera 21:14)".
+   Zdroje starší než 3 dny jsou označené jako možná neaktuální.
 
 ## Chyby a okrajové stavy
 
@@ -101,6 +110,7 @@ docs/plans/             plány implementace
 
 ## Mimo rozsah v1
 
-Moduly Výbava, Dungeony a Trenér; plánovač levelování profese; ceny z aukce;
+Moduly Výbava, Dungeony a Trenér; plánovač levelování profese; ceny z aukce
+(Blizzard API pro Forever je nejisté a aukční addony vyžadují ruční sken v aukci);
 Blizzard API; automatická instalace addonu z aplikace; automatické aktualizace aplikace;
 podpora macOS pro běh aplikace.
