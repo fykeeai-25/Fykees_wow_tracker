@@ -1,6 +1,6 @@
 ## Interface: 11507
 ## Title: AzerothTracker
-## Notes: Sbírá data o profesích a inventáři pro aplikaci AzerothTracker.
+## Notes: Collects profession and inventory data for the AzerothTracker app.
 ## Version: 0.1.0
 ## SavedVariables: AzerothTrackerDB
 

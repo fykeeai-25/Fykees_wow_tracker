@@ -3,7 +3,7 @@
   "productName": "AzerothTracker",
   "version": "0.1.0",
   "private": true,
-  "description": "AzerothTracker \u2013 companion aplikace pro World of Warcraft: Forever",
+  "description": "AzerothTracker - companion app for World of Warcraft: Forever",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",

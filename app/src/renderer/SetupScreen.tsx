@@ -7,9 +7,9 @@ export interface SetupScreenProps {
 }
 
 const REASON: Record<'missing-dir' | 'missing-wtf' | 'no-accounts', string> = {
-  'missing-dir': 'Složka neexistuje.',
-  'missing-wtf': 'Ve složce chybí WTF – vyber složku, kde jsou Interface a WTF.',
-  'no-accounts': 'Ve složce WTF/Account není žádný účet – přihlas se jednou do hry.'
+  'missing-dir': 'This folder does not exist.',
+  'missing-wtf': 'This folder has no WTF folder – pick the folder that contains Interface and WTF.',
+  'no-accounts': 'There is no account in WTF/Account – log in to the game once.'
 }
 
 export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreenProps) {
@@ -18,7 +18,7 @@ export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreen
       <h1>AzerothTracker</h1>
       {state.phase === 'needs-account' ? (
         <>
-          <p>Ve složce je víc WoW účtů. Vyber, který chceš sledovat:</p>
+          <p>This folder has several WoW accounts. Pick the one to track:</p>
           <div className="accounts">
             {state.accounts.map((a) => (
               <button key={a} onClick={() => onSelectAccount(a)}>
@@ -28,18 +28,18 @@ export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreen
           </div>
           <p className="muted">{state.gameDir}</p>
           <button className="link" onClick={onChooseDir}>
-            Změnit složku
+            Change folder
           </button>
         </>
       ) : (
         <>
           <p>
-            Vyber složku hry – tu, ve které jsou <code>Interface</code> a <code>WTF</code> (např.{' '}
-            <code>D:\Hry\World of Warcraft\_forever_</code>).
+            Choose your game folder – the one that contains <code>Interface</code> and <code>WTF</code> (e.g.{' '}
+            <code>D:\Games\World of Warcraft\_forever_</code>).
           </p>
           {state.phase === 'needs-game-dir' && state.reason && <p className="error">{REASON[state.reason]}</p>}
           <button className="primary" onClick={onChooseDir}>
-            Vybrat složku hry
+            Choose game folder
           </button>
         </>
       )}

@@ -1,117 +1,120 @@
-# AzerothTracker – návrh kostry (v1: modul Profese)
+# AzerothTracker – skeleton design (v1: Professions module)
 
-Datum: 2026-11-01
-Stav: návrh ke schválení
+Date: 2026-11-01
+Status: approved, v1 implemented (English UI since 2026-11-01)
 
-## Cíl
+## Goal
 
-Companion aplikace pro **World of Warcraft: Forever** ve stylu AlecaFrame (Warframe).
-Běží jako samostatné okno na druhém monitoru, bez overlaye ve hře. Funkce addonů
-(GearQuest Forever, Mastercraft, DungeonJournal, What's Training) přenáší mimo hru.
-Aplikace je pro osobní použití a pro pár přátel, každý ji spouští lokálně u sebe.
+A companion app for **World of Warcraft: Forever** in the style of AlecaFrame (Warframe).
+It runs as a separate window on a second monitor, with no in-game overlay. It moves the
+features of addons such as GearQuest Forever, Mastercraft, DungeonJournal and What's
+Training out of the game. It is for personal use and a few friends; everyone runs it
+locally.
 
-První verze obsahuje jediný modul: **Profese** (inspirace Mastercraft). Další moduly
-se přidají podle toho, jak hra po vydání (4. 11. 2026) skutečně vypadá.
+The first version has a single module: **Professions** (inspired by Mastercraft). More
+modules will be added depending on what the game looks like after launch (2026-11-04).
 
-## Pojmenování
+## Naming and language
 
-- Aplikace, addon i data se jmenují **AzerothTracker**.
-- Název GitHub repa (`Fykees_wow_tracker`) se v aplikaci nikde neobjevuje.
+- The app, the addon and the data are all called **AzerothTracker**.
+- The GitHub repo name (`Fykees_wow_tracker`) never appears inside the app.
+- Everything is in English: UI, addon messages, docs.
 
-## Prostředí
+## Environment
 
-- **Vývoj:** macOS. Testuje se nad ukázkovými soubory SavedVariables, hra k tomu není potřeba.
-- **Běh:** Windows PC, na kterém se hraje. Windows build vytváří GitHub Actions
-  (runner `windows-latest`) a výsledné `.exe` je ke stažení v GitHub Releases spolu
-  se zipem addonu. Na herním PC není potřeba Node ani git.
+- **Development:** macOS. Tests run against sample SavedVariables files; the game is not needed.
+- **Runtime:** the Windows PC the game is played on. GitHub Actions (`windows-latest`) builds
+  the Windows app; the `.exe` and a zip of the addon are published in GitHub Releases. The
+  gaming PC needs neither Node nor git.
 
-## Architektura
+## Architecture
 
-### A) Addon `AzerothTracker` (Lua, ve hře)
+### A) Addon `AzerothTracker` (Lua, in game)
 
-- Soubory: `addon/AzerothTracker/AzerothTracker.toc`, `AzerothTracker.lua`.
-- Ukládá do SavedVariables `AzerothTrackerDB`, data jsou klíčovaná podle `realm` a `postava`.
-- Sbírá:
-  - základní info o postavě (jméno, realm, rasa, třída, level),
-  - profese: název, aktuální a maximální skill,
-  - naučené recepty včetně materiálů; zachytí je při otevření okna profese,
-  - obsah tašek; obsah banky jen při otevřené bance,
-  - obsah banky sdílené celým účtem (pokud ji Forever má) při jejím otevření;
-    ukládá se zvlášť, ne pod konkrétní postavu.
-- Ukládá i čas poslední aktualizace každé části.
-- Omezení hry: soubor se na disk zapisuje jen při `/reload`, odhlášení (včetně přepnutí
-  postavy) nebo ukončení hry. Načítací obrazovka při změně zóny ho nezapisuje.
-- Soubor je společný pro celý WoW účet, takže uchovává data všech postav z jejich
-  posledního přihlášení.
-- Názvy API funkcí pro Forever se ověří po vydání. Classic používá pro Enchanting
-  jiné API (Craft) než pro ostatní profese (TradeSkill), addon musí zvládnout obě.
+- Files: `addon/AzerothTracker/AzerothTracker.toc`, `AzerothTracker.lua`.
+- Saves to SavedVariables `AzerothTrackerDB`, keyed by `realm` and character.
+- Collects:
+  - character basics (name, realm, race, class, level),
+  - professions: name, current and maximum skill,
+  - learned recipes with reagents, captured when the profession window is opened,
+  - bag contents; bank contents only while the bank is open,
+  - the account-wide bank (if Forever has one) when it is opened; stored separately, not
+    under a character.
+- Stores when each part was last updated.
+- Game limitation: the file is written to disk only on `/reload`, logout (including switching
+  character) or quitting the game. Loading screens on zone changes do not write it.
+- The file is shared by the whole WoW account, so it keeps data for every character from
+  their last login.
+- API function names for Forever will be verified after launch. Classic uses a different API
+  for Enchanting (Craft) than for other professions (TradeSkill); the addon handles both.
 
-### B) Desktopová aplikace (Electron + TypeScript + React)
+### B) Desktop app (Electron + TypeScript + React)
 
-- Nástroje: electron-vite, React, TypeScript, Vitest.
-- **Main proces:**
-  - `config`: uloží zvolenou herní složku a účet (soubor v userData).
-  - `savedVariablesLocator`: z herní složky odvodí cestu
-    `WTF/Account/<účet>/SavedVariables/AzerothTracker.lua`. Aplikace pracuje vždy s jedním
-    účtem. Když jich ve složce najde víc, nechá uživatele jeden vybrat a volba jde
-    změnit v nastavení. Data z více účtů se neslučují.
-  - `watcher`: sleduje soubor a při změně ho znovu načte.
-  - `luaParser`: převede Lua tabulku `AzerothTrackerDB` na JSON.
-  - `normalizer`: z JSON vytvoří doménový model (Character, Profession, Recipe, Inventory).
-  - Výsledek posílá do rendereru přes IPC.
+- Tooling: electron-vite, React, TypeScript, Vitest.
+- **Main process:**
+  - `config`: stores the chosen game folder and account (a file in userData).
+  - `savedVariablesLocator`: derives `WTF/Account/<account>/SavedVariables/AzerothTracker.lua`
+    from the game folder. The app always works with one account. If the folder has several,
+    the user picks one and can change it in settings. Data from several accounts is never merged.
+  - `watcher`: watches the file and reloads it on change.
+  - `luaParser`: turns the `AzerothTrackerDB` Lua table into JSON.
+  - `normalizer`: builds the domain model (Character, Profession, Recipe, Inventory) from JSON.
+  - Sends the result to the renderer over IPC.
 - **Renderer (UI):**
-  - Úvodní obrazovka pro výběr herní složky (při prvním spuštění nebo když cesta neplatí).
-  - Navigace po modulech jako záložky; v1 obsahuje jen záložku Profese.
-  - Lišta se stavem dat: „Data z /reload v HH:MM", případně varování.
+  - A setup screen for choosing the game folder (first launch, or when the path is invalid).
+  - Modules as tabs; v1 contains only the Professions tab.
+  - A status bar with data freshness: "Data from /reload at HH:MM", or a warning.
 
-### C) Statická herní data (`data/`)
+### C) Static game data (`data/`)
 
-- JSON soubory na profesi: recepty, potřebné materiály, rozsahy skillu pro barvy
-  (oranžová, žlutá, zelená, šedá), zdroj receptu (trenér, vendor, drop), cena u trenéra.
-- Do vydání hry jen ukázková data. Skutečná data se doplní po otevření serverů.
+- One JSON file per profession: recipes, reagents, skill ranges for colours (orange, yellow,
+  green, grey), recipe source (trainer, vendor, drop), trainer cost.
+- Sample data only until the game launches; real data will be added once servers open.
 
-## Modul Profese (v1)
+## Professions module (v1)
 
-1. **Přehled postav:** všechny postavy z SavedVariables, jejich profese a skill (např. 142/150).
-2. **Recepty:** naučené, dostupné hned a dostupné po nejbližším zvýšení skillu,
-   s barvou obtížnosti podle aktuálního skillu.
-3. **Materiály napříč postavami:** u vybraného receptu kolik čeho je potřeba a kolik
-   toho je k dispozici celkem, s rozpisem podle zdroje: postava × (taška / banka)
-   a banka účtu. U každého zdroje je čas, kdy byl naposledy viděn.
-   Příklad: „Peacebloom 12 = Fykee taška 4 + Alt banka 8 (viděno včera 21:14)".
-   Zdroje starší než 3 dny jsou označené jako možná neaktuální.
+1. **Character overview:** every character in SavedVariables, their professions and skill (e.g. 142/150).
+2. **Recipes:** known, learnable now, and learnable after the next skill-up, with a
+   difficulty colour based on the current skill.
+3. **Materials across characters:** for the selected recipe, how much of each reagent is
+   needed and how much is available in total, broken down by source: character × (bags /
+   bank) and the account bank. Each source shows when it was last seen.
+   Example: "Peacebloom 12 = Thrall bags 4 + Alt bank 8 (seen yesterday 21:14)".
+   Sources older than 3 days are marked as possibly outdated. Characters whose bank was never
+   seen are listed ("Bank not scanned yet").
 
-## Chyby a okrajové stavy
+## Errors and edge cases
 
-- Herní složka neexistuje nebo v ní chybí `WTF`: zobrazí se úvodní obrazovka s výběrem.
-- Soubor SavedVariables chybí (addon ještě nic nezapsal): návod „nainstaluj addon,
-  přihlas se a dej /reload".
-- Soubor nejde načíst (poškozený nebo zrovna zapisovaný): zůstane poslední dobrý stav
-  a zobrazí se varování. Při další změně souboru se načtení zkusí znovu.
-- Recept, který není ve statických datech: zobrazí se s údaji z addonu a označením „neznámý".
+- The game folder does not exist or has no `WTF`: show the setup screen.
+- SavedVariables file is missing (the addon has not written anything yet): show
+  "install the addon, log in and type /reload".
+- The file cannot be read (damaged or being written): keep the last good data and show a
+  warning. Retry on the next file change.
+- A recipe missing from static data: show it with the addon's data and mark it "unknown".
 
-## Struktura repa
+## Repository layout
 
 ```
 addon/AzerothTracker/   addon (.toc, .lua)
-app/                    Electron aplikace
-data/                   statická herní data (JSON)
-docs/specs/             specifikace
-docs/plans/             plány implementace
-.github/workflows/      Windows build a release
+app/                    Electron app
+data/                   static game data (JSON)
+docs/specs/             specifications
+docs/plans/             implementation plans
+.github/workflows/      CI and Windows release
 ```
 
-## Testování
+## Testing
 
-- Vitest: `luaParser`, `normalizer`, `savedVariablesLocator` a logika Profesí
-  (co je dostupné, barvy, materiály) nad ukázkovými soubory v `app/test/fixtures/`.
-- Addon: ruční test ve hře po vydání (4. 11.). Výstup addonu musí odpovídat formátu
-  ukázkových souborů. Pokud se API liší, upraví se addon i ukázková data.
-- CI: testy běží v GitHub Actions při každém pushi a před každým buildem.
+- Vitest: `luaParser`, `normalizer`, `savedVariablesLocator` and the Professions logic
+  (what is learnable, colours, materials) against sample files in `app/test/fixtures/`.
+- Addon: an automated contract test runs the addon against a mocked WoW API in CI; a manual
+  in-game test follows the launch (2026-11-04). If the API differs, both the addon and the
+  sample data are updated.
+- CI: tests run in GitHub Actions on every push and before every build.
 
-## Mimo rozsah v1
+## Out of scope for v1
 
-Moduly Výbava, Dungeony a Trenér; plánovač levelování profese; ceny z aukce
-(Blizzard API pro Forever je nejisté a aukční addony vyžadují ruční sken v aukci);
-Blizzard API; automatická instalace addonu z aplikace; automatické aktualizace aplikace;
-podpora macOS pro běh aplikace.
+Gear, Dungeons and Trainer modules; profession levelling planner; auction prices (the
+Blizzard API for Forever is uncertain and auction addons require a manual scan at the
+auction house); Blizzard API; installing the addon from the app; automatic app updates;
+running the app on macOS as a product.

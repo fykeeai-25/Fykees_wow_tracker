@@ -14,7 +14,7 @@
 
 - Product name everywhere in code, UI, addon, data, package names and build output: `AzerothTracker`. The string "Fykee" (any case) must not appear under `app/`, `addon/`, `data/` or `.github/`. Only the repo name keeps it.
 - SavedVariables variable: `AzerothTrackerDB`. Addon folder/file: `addon/AzerothTracker/AzerothTracker.toc`, `AzerothTracker.lua`.
-- UI copy is Czech (e.g. tab label `Profese`, status `Data z /reload v HH:MM`).
+- UI copy is English (e.g. tab label `Professions`, status `Data from /reload at HH:MM`). *Changed from Czech on 2026-11-01 after v1 was built; the Czech UI strings quoted in the tasks below are historical — the code and tests are the source of truth.*
 - One WoW account at a time. If several exist in `WTF/Account/`, the user picks one; choice is stored and changeable in settings. Data from several accounts is never merged.
 - The user picks the game folder manually (the folder containing `Interface` and `WTF`, e.g. `D:\Hry\World of Warcraft\_forever_`). No auto-detection of install location.
 - SavedVariables path: `<gameDir>/WTF/Account/<account>/SavedVariables/AzerothTracker.lua`.

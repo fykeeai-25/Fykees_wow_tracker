@@ -49,22 +49,22 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
       <div className="profession-body">
         <div className="recipe-columns">
           {c.scanned ? (
-            <RecipeList title="Umím" items={c.known} onSelect={setSelected} />
+            <RecipeList title="Known" items={c.known} onSelect={setSelected} />
           ) : (
-            <p className="hint">Otevři okno profese ve hře a dej /reload.</p>
+            <p className="hint">Open the profession window in game and type /reload.</p>
           )}
-          <RecipeList title="Můžu se naučit teď" items={c.availableNow} onSelect={setSelected} />
-          <RecipeList title="Po dalším skillupu" items={c.availableNext} onSelect={setSelected} />
+          <RecipeList title="Learnable now" items={c.availableNow} onSelect={setSelected} />
+          <RecipeList title="Next skill-up" items={c.availableNext} onSelect={setSelected} />
           {c.unknownKnown.length > 0 && (
-            <section className="recipes" aria-label="Neznámé recepty">
-              <h3>Neznámé recepty</h3>
+            <section className="recipes" aria-label="Unknown recipes">
+              <h3>Unknown recipes</h3>
               <ul>
                 {c.unknownKnown.map((r) => (
                   <li key={r.name}>
                     <button className="recipe" onClick={() => setSelected(r)}>
                       <span className="dot unknown" aria-hidden />
                       <span>{r.name}</span>
-                      <span className="muted">neznámý</span>
+                      <span className="muted">unknown</span>
                     </button>
                   </li>
                 ))}
@@ -92,14 +92,14 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
   const [profName, setProfName] = useState<string>()
 
   if (snapshot.characters.length === 0) {
-    return <p className="hint">Zatím žádné postavy – přihlas se a dej /reload.</p>
+    return <p className="hint">No characters yet – log in and type /reload.</p>
   }
   const character = snapshot.characters.find((c) => c.key === charKey) ?? snapshot.characters[0]
   const profession = character.professions.find((p) => p.name === profName) ?? character.professions[0]
 
   return (
     <div className="professions">
-      <nav className="characters" aria-label="Postavy">
+      <nav className="characters" aria-label="Characters">
         {snapshot.characters.map((c) => (
           <button
             key={c.key}
@@ -115,7 +115,7 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
       </nav>
       <div className="character-detail">
         {character.professions.length === 0 ? (
-          <p className="hint">Tahle postava zatím nemá žádnou profesi.</p>
+          <p className="hint">This character has no professions yet.</p>
         ) : (
           <>
             <div className="profession-tabs">

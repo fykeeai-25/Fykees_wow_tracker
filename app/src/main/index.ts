@@ -36,7 +36,7 @@ function createWindow(): void {
 ipcMain.handle(IPC.getState, () => tracker.getState())
 ipcMain.handle(IPC.chooseGameDir, async () => {
   const res = await dialog.showOpenDialog({
-    title: 'Vyber složku hry (obsahuje Interface a WTF)',
+    title: 'Choose the game folder (contains Interface and WTF)',
     properties: ['openDirectory']
   })
   if (!res.canceled && res.filePaths[0]) tracker.setGameDir(res.filePaths[0])

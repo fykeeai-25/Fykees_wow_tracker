@@ -4,9 +4,9 @@ import { materialAvailability, unscannedBanks, type MaterialSource } from '../..
 import { ageText } from './format'
 
 const CONTAINER_LABEL: Record<MaterialSource['container'], string> = {
-  bags: 'taška',
-  bank: 'banka',
-  accountBank: 'Banka účtu'
+  bags: 'bags',
+  bank: 'bank',
+  accountBank: 'Account bank'
 }
 
 function sourceLabel(s: MaterialSource): string {
@@ -28,11 +28,11 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: Ma
   const rows = materialAvailability(reagents, snapshot, data, now, qty)
   const unscanned = unscannedBanks(snapshot)
   return (
-    <section className="materials" aria-label="Materiály">
+    <section className="materials" aria-label="Materials">
       <header>
         <h3>{recipeName}</h3>
         <label>
-          Počet
+          Quantity
           <input
             type="number"
             min={1}
@@ -41,7 +41,7 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: Ma
           />
         </label>
       </header>
-      {rows.length === 0 && <p className="muted">Recept nemá žádné materiály.</p>}
+      {rows.length === 0 && <p className="muted">This recipe needs no materials.</p>}
       {rows.map((row) => (
         <div key={row.itemId} className={`material ${row.enough ? 'enough' : 'missing'}`}>
           <div className="material-head">
@@ -50,16 +50,16 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: Ma
           </div>
           <ul>
             {row.sources.map((s, i) => (
-              <li key={i} className={s.stale ? 'stale' : undefined} title={s.stale ? 'Možná neaktuální' : undefined}>
+              <li key={i} className={s.stale ? 'stale' : undefined} title={s.stale ? 'May be outdated' : undefined}>
                 {`${sourceLabel(s)} (${ageText(s.seenAt, now)})`}
               </li>
             ))}
-            {row.sources.length === 0 && <li className="muted">Nikde nenalezeno</li>}
+            {row.sources.length === 0 && <li className="muted">Not found anywhere</li>}
           </ul>
         </div>
       ))}
       {unscanned.length > 0 && (
-        <p className="muted unscanned">{`Banka nenaskenována: ${unscanned.map((u) => u.characterName).join(', ')}`}</p>
+        <p className="muted unscanned">{`Bank not scanned yet: ${unscanned.map((u) => u.characterName).join(', ')}`}</p>
       )}
     </section>
   )

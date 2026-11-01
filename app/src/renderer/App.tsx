@@ -45,20 +45,20 @@ export function App() {
             </button>
           ))}
         </nav>
-        <button className="gear" aria-label="Nastavení" onClick={() => setShowSettings((v) => !v)}>
+        <button className="gear" aria-label="Settings" onClick={() => setShowSettings((v) => !v)}>
           ⚙
         </button>
       </header>
       {showSettings && (
         <div className="settings">
           <div>
-            <span className="muted">Složka hry</span> <code>{state.gameDir}</code>
+            <span className="muted">Game folder</span> <code>{state.gameDir}</code>
           </div>
           <div>
-            <span className="muted">Účet</span> <code>{state.account}</code>
+            <span className="muted">Account</span> <code>{state.account}</code>
           </div>
-          <button onClick={() => window.azeroth.chooseGameDir()}>Změnit složku</button>
-          <button onClick={() => window.azeroth.setAccount('')}>Změnit účet</button>
+          <button onClick={() => window.azeroth.chooseGameDir()}>Change folder</button>
+          <button onClick={() => window.azeroth.setAccount('')}>Change account</button>
         </div>
       )}
       <main>
@@ -66,9 +66,9 @@ export function App() {
           <active.Component snapshot={state.load.snapshot} now={now} />
         ) : (
           <div className="hint">
-            <p>Data addonu zatím nejsou k dispozici.</p>
+            <p>No addon data yet.</p>
             <p className="muted">
-              Zkopíruj addon do <code>{`${state.gameDir}\\Interface\\AddOns\\AzerothTracker`}</code>, přihlas se a dej{' '}
+              Copy the addon to <code>{`${state.gameDir}\\Interface\\AddOns\\AzerothTracker`}</code>, log in and type{' '}
               <code>/reload</code>.
             </p>
           </div>

@@ -8,4 +8,4 @@ export interface ModuleDef {
   Component: FC<{ snapshot: TrackerSnapshot; now: number }>
 }
 
-export const modules: ModuleDef[] = [{ id: 'professions', label: 'Profese', Component: ProfessionsView }]
+export const modules: ModuleDef[] = [{ id: 'professions', label: 'Professions', Component: ProfessionsView }]

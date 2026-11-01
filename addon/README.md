@@ -1,27 +1,27 @@
-# Addon AzerothTracker
+# AzerothTracker addon
 
-Sbírá ve hře data pro aplikaci AzerothTracker a ukládá je do SavedVariables
+Collects data in game for the AzerothTracker app and saves it to SavedVariables
 (`AzerothTrackerDB`).
 
-## Instalace
+## Install
 
-1. Zkopíruj složku `AzerothTracker` do `<složka hry>\Interface\AddOns\`
-   (tedy `<složka hry>\Interface\AddOns\AzerothTracker\AzerothTracker.toc`).
-2. Ve výběru postav zapni addon v **AddOns**. Pokud hlásí „zastaralý",
-   zaškrtni **Load out of date AddOns**.
-3. Ve hře otevři okno každé profese (bez filtrů a hledání) a zajdi do banky.
-4. Dej `/reload` – teprve tehdy hra zapíše data na disk (zapisuje je také při
-   odhlášení a přepnutí postavy).
+1. Copy the `AzerothTracker` folder into `<game folder>\Interface\AddOns\`
+   (so you get `<game folder>\Interface\AddOns\AzerothTracker\AzerothTracker.toc`).
+2. Enable the addon under **AddOns** on the character screen. If it says "out of date",
+   tick **Load out of date AddOns**.
+3. In game, open each profession window and visit the bank.
+4. Type `/reload` – only then does the game write the data to disk (it also does so on
+   logout and when switching characters).
 
-Příkaz `/azeroth` (nebo `/at`) vypíše, kolik dat addon zatím nasbíral.
+`/azeroth` (or `/at`) prints how much data the addon has collected so far.
 
-## Ruční test po vydání hry (4. 11.)
+## Manual test after launch (2026-11-04)
 
-- [ ] V `/dump select(4, GetBuildInfo())` zjistit číslo rozhraní a dát ho do `## Interface:` v `.toc`.
-- [ ] Po `/reload` existuje `WTF\Account\<účet>\SavedVariables\AzerothTracker.lua`.
-- [ ] Soubor odpovídá formátu z plánu (schemaVersion 1): postava, profese se skillem, recepty, tašky, banka.
-- [ ] `/dump TRADE_SKILLS, SECONDARY_SKILLS` – odpovídá to nadpisům v okně skillů (Professions / Secondary Skills)?
-- [ ] Sbalit kategorii v okně profese, dát `/reload` – recepty v aplikaci zůstanou.
-- [ ] Enchanting (Craft API) se zapisuje stejně jako ostatní profese.
-- [ ] Pokud má Forever banku účtu, objeví se `accountBank`.
-- [ ] Aplikace data zobrazí a po dalším `/reload` se sama obnoví.
+- [ ] Run `/dump select(4, GetBuildInfo())` and put the interface number into `## Interface:` in the `.toc`.
+- [ ] After `/reload`, `WTF\Account\<account>\SavedVariables\AzerothTracker.lua` exists.
+- [ ] The file matches the format in the plan (schemaVersion 1): character, professions with skill, recipes, bags, bank.
+- [ ] `/dump TRADE_SKILLS, SECONDARY_SKILLS` – does it match the headers in the skills window (Professions / Secondary Skills)?
+- [ ] Collapse a category in the profession window, `/reload` – the recipes are still in the app.
+- [ ] Enchanting (Craft API) is saved like the other professions.
+- [ ] If Forever has an account bank, `accountBank` appears.
+- [ ] The app shows the data and refreshes by itself after the next `/reload`.

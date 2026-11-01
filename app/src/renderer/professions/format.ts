@@ -1,11 +1,11 @@
 import type { StaticRecipe } from '../../shared/types'
 
 const SOURCE_LABEL: Record<StaticRecipe['source']['type'], string> = {
-  trainer: 'Trenér',
-  vendor: 'Obchodník',
+  trainer: 'Trainer',
+  vendor: 'Vendor',
   drop: 'Drop',
   quest: 'Quest',
-  unknown: 'Neznámý zdroj'
+  unknown: 'Unknown source'
 }
 
 export function money(copper: number): string {
@@ -22,7 +22,7 @@ export function sourceText(r: StaticRecipe): string {
 
 export function ageText(seenAt: number, now: number): string {
   const days = Math.floor((now - seenAt) / 86400)
-  if (days <= 0) return 'dnes'
-  if (days === 1) return 'včera'
-  return `před ${days} dny`
+  if (days <= 0) return 'today'
+  if (days === 1) return 'yesterday'
+  return `${days} days ago`
 }

@@ -23,7 +23,7 @@ export interface Tracker {
   stop(): void
 }
 
-export const STALE_FILE_WARNING = 'Soubor se nepodařilo načíst, zobrazuji poslední platná data.'
+export const STALE_FILE_WARNING = 'Could not read the file, showing the last valid data.'
 
 /** Windows paths are case-insensitive and may be spelled differently; compare a normalized key. */
 function samePathKey(p: string): string {

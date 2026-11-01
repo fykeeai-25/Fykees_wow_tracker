@@ -304,5 +304,5 @@ SlashCmdList["AZEROTHTRACKER"] = function()
       for _ in pairs(p.recipes or {}) do recipes = recipes + 1 end
     end
   end
-  print(string.format("|cffe0b44cAzerothTracker|r: %d postav, %d profesí, %d receptů. Data se uloží po /reload.", chars, profs, recipes))
+  print(string.format("|cffe0b44cAzerothTracker|r: %d characters, %d professions, %d recipes. Data is saved on /reload.", chars, profs, recipes))
 end
