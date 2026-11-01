@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { itemName, materialAvailability, STALE_AFTER_SECONDS, unscannedBanks } from './materials'
+import { canCraft, itemName, materialAvailability, STALE_AFTER_SECONDS, unscannedBanks } from './materials'
 import { alchemy, sampleItems, fixtureSnapshot, FIXTURE_NOW } from '../../test/snapshot'
 
 const mhp = alchemy.recipes.find((r) => r.name === 'Minor Healing Potion')!
@@ -31,7 +31,7 @@ describe('materialAvailability', () => {
 
   it('item nobody has → total 0, no sources', () => {
     const rows = materialAvailability([{ itemId: 2453, count: 2 }], fixtureSnapshot(), sampleItems, FIXTURE_NOW)
-    expect(rows).toEqual([{ itemId: 2453, name: 'Bruiseweed', needed: 2, total: 0, enough: false, sources: [] }])
+    expect(rows).toEqual([{ itemId: 2453, name: 'Bruiseweed', perCraft: 2, needed: 2, total: 0, enough: false, sources: [] }])
   })
 
   it('stale threshold is 3 days', () => {
@@ -53,5 +53,22 @@ describe('itemName', () => {
 describe('unscannedBanks', () => {
   it('lists characters whose bank was never seen', () => {
     expect(unscannedBanks(fixtureSnapshot())).toEqual([{ characterKey: 'Firemaw-Jaina', characterName: 'Jaina' }])
+  })
+})
+
+describe('canCraft', () => {
+  it('counts crafts from what is owned and names the limiting reagent', () => {
+    const rows = materialAvailability(mhp.reagents, fixtureSnapshot(), sampleItems, FIXTURE_NOW, 4)
+    expect(rows.map((r) => r.perCraft)).toEqual([1, 1])
+    expect(canCraft(rows)).toEqual({ count: 3, limitedBy: 'Earthroot' })
+  })
+
+  it('names the missing reagent when nothing can be crafted', () => {
+    const rows = materialAvailability([{ itemId: 2453, count: 2 }], fixtureSnapshot(), sampleItems, FIXTURE_NOW)
+    expect(canCraft(rows)).toEqual({ count: 0, missing: 'Bruiseweed' })
+  })
+
+  it('no reagents → nothing to report', () => {
+    expect(canCraft([])).toEqual({ count: 0 })
   })
 })

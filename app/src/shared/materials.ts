@@ -14,6 +14,8 @@ export interface MaterialSource {
 export interface MaterialRow {
   itemId: number
   name: string
+  /** amount for one craft */
+  perCraft: number
   needed: number
   total: number
   enough: boolean
@@ -23,6 +25,10 @@ export interface MaterialRow {
 /** Name from the game data pack, then from what the addon saw, then a placeholder. */
 export function itemName(id: number, snapshot: TrackerSnapshot, items?: Record<string, string>): string {
   return items?.[String(id)] ?? snapshot.itemNames[id] ?? `Item #${id}`
+}
+
+export function canCraft(_rows: MaterialRow[]): { count: number; limitedBy?: string; missing?: string } {
+  throw new Error('not implemented')
 }
 
 export function materialAvailability(
@@ -48,7 +54,7 @@ export function materialAvailability(
 
     const needed = r.count * multiplier
     const total = sources.reduce((sum, s) => sum + s.count, 0)
-    return { itemId: r.itemId, name: itemName(r.itemId, snapshot, items), needed, total, enough: total >= needed, sources }
+    return { itemId: r.itemId, name: itemName(r.itemId, snapshot, items), perCraft: r.count, needed, total, enough: total >= needed, sources }
   })
 }
 

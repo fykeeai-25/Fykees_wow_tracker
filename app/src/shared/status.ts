@@ -15,6 +15,14 @@ function parts(unixSeconds: number, tz?: string): Record<string, string> {
   return out
 }
 
+export function agoText(_seconds: number): string {
+  throw new Error('not implemented')
+}
+
+export function isOld(_load: LoadState, _now: number): boolean {
+  throw new Error('not implemented')
+}
+
 export function statusText(load: LoadState, now: number, tz?: string): string {
   if (load.status === 'missing') return 'No data yet – install the addon, log in and type /reload.'
   if (load.status === 'error') return `Load error: ${load.message}`

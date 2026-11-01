@@ -1,4 +1,5 @@
 import type { AppState, DataState } from './types'
+import type { WindowPrefs } from '../main/windowState'
 
 export const IPC = {
   getState: 'state:get',
@@ -6,6 +7,9 @@ export const IPC = {
   chooseGameDir: 'config:chooseGameDir',
   setAccount: 'config:setAccount',
   getData: 'data:get',
+  getWindowPrefs: 'window:getPrefs',
+  setAlwaysOnTop: 'window:setAlwaysOnTop',
+  openWowhead: 'shell:openWowhead',
   dataChanged: 'data:changed'
 } as const
 
@@ -17,4 +21,7 @@ export interface AzerothApi {
   setAccount(account: string): Promise<void>
   getData(): Promise<DataState>
   onData(cb: (s: DataState) => void): () => void
+  getWindowPrefs(): Promise<WindowPrefs>
+  setAlwaysOnTop(on: boolean): Promise<void>
+  openWowhead(url: string): Promise<void>
 }

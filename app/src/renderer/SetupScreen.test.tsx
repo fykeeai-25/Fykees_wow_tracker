@@ -11,7 +11,7 @@ describe('SetupScreen', () => {
     render(
       <SetupScreen state={{ phase: 'needs-game-dir', reason: 'missing-wtf' }} onChooseDir={onChooseDir} onSelectAccount={vi.fn()} />
     )
-    expect(screen.getByText('This folder has no WTF folder – pick the folder that contains Interface and WTF.')).toBeTruthy()
+    expect(screen.getByText("That isn't the game folder. Pick the one with Interface and WTF, usually …\\_forever_.")).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Choose game folder' }))
     expect(onChooseDir).toHaveBeenCalled()
   })
@@ -22,7 +22,7 @@ describe('SetupScreen', () => {
     )
     expect(screen.getByText('This folder does not exist.')).toBeTruthy()
     rerender(<SetupScreen state={{ phase: 'needs-game-dir', reason: 'no-accounts' }} onChooseDir={vi.fn()} onSelectAccount={vi.fn()} />)
-    expect(screen.getByText('There is no account in WTF/Account – log in to the game once.')).toBeTruthy()
+    expect(screen.getByText('No WoW account found in WTF/Account. Log in to the game once, then try again.')).toBeTruthy()
   })
 
   it('lets the user pick one of several accounts', () => {
@@ -34,6 +34,7 @@ describe('SetupScreen', () => {
         onSelectAccount={onSelectAccount}
       />
     )
+    expect(screen.getByText('Several accounts found. Which one should AzerothTracker follow?')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'ACC1' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'ACC2' }))
     expect(onSelectAccount).toHaveBeenCalledWith('ACC2')
