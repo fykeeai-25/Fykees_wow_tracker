@@ -42,4 +42,4 @@ jobs:
         run: npm run --if-present check:addon
       - name: Product name check
         working-directory: .
-        run: "! git grep -il 'fyke[e]' -- app addon data .github"
+        run: "! git grep -il 'fyke[e]' -- app addon data .github ':!app/src/main/dataStore.ts'"

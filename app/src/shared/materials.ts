@@ -1,4 +1,4 @@
-import type { Container, ProfessionData, Reagent, TrackerSnapshot } from './types'
+import type { Container, Reagent, TrackerSnapshot } from './types'
 
 export const STALE_AFTER_SECONDS = 259200
 
@@ -20,14 +20,15 @@ export interface MaterialRow {
   sources: MaterialSource[]
 }
 
-export function itemName(id: number, snapshot: TrackerSnapshot, data?: ProfessionData): string {
-  return data?.items[String(id)] ?? snapshot.itemNames[id] ?? `Item #${id}`
+/** Name from the game data pack, then from what the addon saw, then a placeholder. */
+export function itemName(id: number, snapshot: TrackerSnapshot, items?: Record<string, string>): string {
+  return items?.[String(id)] ?? snapshot.itemNames[id] ?? `Item #${id}`
 }
 
 export function materialAvailability(
   reagents: Reagent[],
   snapshot: TrackerSnapshot,
-  data: ProfessionData | undefined,
+  items: Record<string, string> | undefined,
   now: number,
   multiplier = 1
 ): MaterialRow[] {
@@ -47,7 +48,7 @@ export function materialAvailability(
 
     const needed = r.count * multiplier
     const total = sources.reduce((sum, s) => sum + s.count, 0)
-    return { itemId: r.itemId, name: itemName(r.itemId, snapshot, data), needed, total, enough: total >= needed, sources }
+    return { itemId: r.itemId, name: itemName(r.itemId, snapshot, items), needed, total, enough: total >= needed, sources }
   })
 }
 

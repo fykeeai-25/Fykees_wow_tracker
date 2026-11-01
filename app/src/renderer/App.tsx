@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { AppState } from '../shared/types'
+import type { AppState, DataState } from '../shared/types'
+import { DataProvider } from './DataContext'
 import { modules } from './modules'
 import { SetupScreen } from './SetupScreen'
 import { StatusBar } from './StatusBar'
@@ -8,6 +9,7 @@ const nowSeconds = () => Math.floor(Date.now() / 1000)
 
 export function App() {
   const [state, setState] = useState<AppState>()
+  const [data, setData] = useState<DataState>()
   const [now, setNow] = useState(nowSeconds)
   const [moduleId, setModuleId] = useState(modules[0].id)
   const [showSettings, setShowSettings] = useState(false)
@@ -15,9 +17,12 @@ export function App() {
   useEffect(() => {
     window.azeroth.getState().then(setState)
     const off = window.azeroth.onState(setState)
+    window.azeroth.getData().then(setData)
+    const offData = window.azeroth.onData(setData)
     const timer = setInterval(() => setNow(nowSeconds()), 30_000)
     return () => {
       off()
+      offData()
       clearInterval(timer)
     }
   }, [])
@@ -35,6 +40,7 @@ export function App() {
 
   const active = modules.find((m) => m.id === moduleId) ?? modules[0]
   return (
+    <DataProvider value={data}>
     <div className="app">
       <header className="topbar">
         <span className="brand">AzerothTracker</span>
@@ -74,7 +80,8 @@ export function App() {
           </div>
         )}
       </main>
-      <StatusBar load={state.load} now={now} />
+      <StatusBar load={state.load} now={now} data={data} />
     </div>
+    </DataProvider>
   )
 }

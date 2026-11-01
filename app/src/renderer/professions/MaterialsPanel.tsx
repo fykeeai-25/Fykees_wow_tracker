@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ProfessionData, Reagent, TrackerSnapshot } from '../../shared/types'
+import type { Reagent, TrackerSnapshot } from '../../shared/types'
 import { materialAvailability, unscannedBanks, type MaterialSource } from '../../shared/materials'
 import { ageText } from './format'
 
@@ -19,13 +19,13 @@ export interface MaterialsPanelProps {
   recipeName: string
   reagents: Reagent[]
   snapshot: TrackerSnapshot
-  data?: ProfessionData
+  items: Record<string, string>
   now: number
 }
 
-export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: MaterialsPanelProps) {
+export function MaterialsPanel({ recipeName, reagents, snapshot, items, now }: MaterialsPanelProps) {
   const [qty, setQty] = useState(1)
-  const rows = materialAvailability(reagents, snapshot, data, now, qty)
+  const rows = materialAvailability(reagents, snapshot, items, now, qty)
   const unscanned = unscannedBanks(snapshot)
   return (
     <section className="materials" aria-label="Materials">

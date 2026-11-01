@@ -1,14 +1,6 @@
 {
   "_sample": true,
   "profession": "Alchemy",
-  "items": {
-    "765": "Silverleaf",
-    "2447": "Peacebloom",
-    "2449": "Earthroot",
-    "2450": "Briarthorn",
-    "2452": "Swiftthistle",
-    "2453": "Bruiseweed"
-  },
   "recipes": [
     {
       "name": "Minor Healing Potion",

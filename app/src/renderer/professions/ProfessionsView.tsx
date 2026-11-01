@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { KnownRecipe, Profession, ProfessionData, TrackerSnapshot } from '../../shared/types'
 import { classifyRecipes, type RecipeView } from '../../shared/professions'
-import { getProfessionData } from '../staticData'
+import { useGameData } from '../DataContext'
 import { MaterialsPanel } from './MaterialsPanel'
 import { sourceText } from './format'
 
@@ -33,7 +33,8 @@ function RecipeList(props: { title: string; items: RecipeView[]; onSelect(s: Sel
 function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnapshot; now: number }) {
   const { profession: p } = props
   const [selected, setSelected] = useState<Selected>()
-  const data: ProfessionData | undefined = getProfessionData(p.name)
+  const game = useGameData()
+  const data: ProfessionData | undefined = game.professionData(p.name)
   const header = (
     <header className="profession-head">
       <h2>{p.name}</h2>
@@ -42,7 +43,7 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
   )
   if (!data && p.knownRecipes === undefined) return <div className="profession">{header}</div>
 
-  const c = classifyRecipes(p, data ?? { profession: p.name, items: {}, recipes: [] })
+  const c = classifyRecipes(p, data ?? { profession: p.name, recipes: [] })
   return (
     <div className="profession">
       {header}
@@ -78,7 +79,7 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
             recipeName={selected.name}
             reagents={selected.reagents}
             snapshot={props.snapshot}
-            data={data}
+            items={game.items}
             now={props.now}
           />
         )}
