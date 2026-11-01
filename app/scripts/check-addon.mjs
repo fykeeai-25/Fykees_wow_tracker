@@ -17,7 +17,9 @@ for (const required of ['## Interface:', '## Title: AzerothTracker', '## SavedVa
 const files = toc.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
 if (files.length === 0) fail('.toc lists no Lua files')
 for (const f of files) {
-  const src = readFileSync(join(addonDir, f), 'utf8')
+  const bytes = readFileSync(join(addonDir, f))
+  // luaparse 'x-user-defined' wants bytes 0x80–0xFF as U+F780–U+F7FF
+  const src = Array.from(bytes, (b) => String.fromCharCode(b >= 0x80 ? 0xf700 + b : b)).join('')
   try {
     luaparse.parse(src, { luaVersion: '5.1', encodingMode: 'x-user-defined' })
   } catch (e) {
