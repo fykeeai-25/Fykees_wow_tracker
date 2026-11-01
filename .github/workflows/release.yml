@@ -18,7 +18,8 @@ jobs:
         with:
           node-version: 22
       - name: Install
-        run: npm install --no-audit --no-fund
+        shell: bash
+        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
       - name: Test
         run: npm test
       - name: Build Windows app
@@ -32,6 +33,14 @@ jobs:
       - name: List build output
         shell: pwsh
         run: Get-ChildItem dist -File | Select-Object Name, Length
+      - name: Upload Windows preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-preview
+          path: |
+            app/dist/AzerothTracker-*.exe
+            app/dist/AzerothTracker-addon-*.zip
+          retention-days: 14
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
