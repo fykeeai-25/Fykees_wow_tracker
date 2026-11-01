@@ -13,21 +13,28 @@ export interface CharacterListProps {
   onSelect(key: string): void
 }
 
-const currencyText = (cur: Record<string, number> | undefined): string =>
-  Object.entries(cur ?? {})
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([n, v]) => `${abbreviateCurrency(n)} ${v}`)
-    .join(' · ')
+/** Short currency labels (MF 7 · HP 3) with the full name as a tooltip. */
+function Currencies({ values }: { values: Record<string, number> | undefined }) {
+  const entries = Object.entries(values ?? {}).sort(([a], [b]) => a.localeCompare(b))
+  return (
+    <>
+      {entries.map(([n, v]) => (
+        <span key={n}>
+          {' · '}
+          <span title={n}>{`${abbreviateCurrency(n)} ${v}`}</span>
+        </span>
+      ))}
+    </>
+  )
+}
 
 export function CharacterList({ snapshot, now, selectedKey, onSelect }: CharacterListProps) {
   const sum = totals(snapshot)
-  const sumCur = currencyText(sum.currencies)
   return (
     <aside className="char-column" aria-label="Characters">
       <div className="column-title">Characters</div>
       <div className="char-rows">
         {snapshot.characters.map((c) => {
-          const cur = currencyText(c.currencies)
           return (
             <button
               key={c.key}
@@ -48,7 +55,7 @@ export function CharacterList({ snapshot, now, selectedKey, onSelect }: Characte
                       <Money copper={c.money} />
                     </>
                   )}
-                  {cur && ` · ${cur}`}
+                  <Currencies values={c.currencies} />
                 </span>
                 <span className="char-seen">{`seen ${agoText(Math.max(0, now - c.updatedAt))}`}</span>
               </span>
@@ -59,7 +66,11 @@ export function CharacterList({ snapshot, now, selectedKey, onSelect }: Characte
       <div className="char-total" role="contentinfo" aria-label="Total">
         <span>Total</span>
         <Money copper={sum.money} />
-        {sumCur && <span>{sumCur}</span>}
+        {Object.entries(sum.currencies)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([n, v]) => (
+            <span key={n} title={n}>{`${abbreviateCurrency(n)} ${v}`}</span>
+          ))}
       </div>
     </aside>
   )

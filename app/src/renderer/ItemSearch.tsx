@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type Ref } from 'react'
 import type { TrackerSnapshot } from '../shared/types'
 import { searchItems } from '../shared/alts'
 import { wowheadItemUrl } from '../shared/wowhead'
@@ -7,7 +7,7 @@ import { sourceLabel } from './professions/format'
 import { WowheadLink } from './professions/WowheadLink'
 
 /** "Where is my item?" – search across all characters' bags and banks. */
-export function ItemSearch({ snapshot, now }: { snapshot: TrackerSnapshot; now: number }) {
+export function ItemSearch({ snapshot, now, inputRef }: { snapshot: TrackerSnapshot; now: number; inputRef?: Ref<HTMLInputElement> }) {
   const [query, setQuery] = useState('')
   const game = useGameData()
   const hits = searchItems(query, snapshot, game.items, now)
@@ -15,6 +15,7 @@ export function ItemSearch({ snapshot, now }: { snapshot: TrackerSnapshot; now: 
   return (
     <section className="item-search">
       <input
+        ref={inputRef}
         type="search"
         className="search-input"
         aria-label="Find item"

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppState, DataState } from '../shared/types'
 import { DataProvider } from './DataContext'
 import { SetupScreen } from './SetupScreen'
@@ -18,6 +18,15 @@ export function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const closeSettings = useCallback(() => setShowSettings(false), [])
+  const searchInput = useRef<HTMLInputElement>(null)
+  const searchToggle = useRef<HTMLButtonElement>(null)
+  const searchOpenRef = useRef(false)
+
+  // Focus the search field when the panel opens (narrow windows).
+  useEffect(() => {
+    searchOpenRef.current = searchOpen
+    if (searchOpen) searchInput.current?.focus()
+  }, [searchOpen])
 
   useEffect(() => {
     window.azeroth.getState().then(setState)
@@ -26,7 +35,10 @@ export function App() {
     const offData = window.azeroth.onData(setData)
     const timer = setInterval(() => setNow(nowSeconds()), 30_000)
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setSearchOpen(false)
+      if (e.key === 'Escape' && searchOpenRef.current) {
+        setSearchOpen(false)
+        searchToggle.current?.focus()
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => {
@@ -59,6 +71,7 @@ export function App() {
           <span className="brand">AzerothTracker</span>
           <StatusBar load={state.load} now={now} data={data} demo={state.demo} />
           <button
+            ref={searchToggle}
             className="search-toggle"
             aria-label="Toggle search"
             aria-expanded={searchOpen}
@@ -88,7 +101,7 @@ export function App() {
               )}
             </main>
             <aside className="search-column" aria-label="Search">
-              <ItemSearch snapshot={snapshot} now={now} />
+              <ItemSearch snapshot={snapshot} now={now} inputRef={searchInput} />
             </aside>
           </div>
         ) : (
