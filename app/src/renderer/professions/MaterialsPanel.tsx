@@ -1,15 +1,10 @@
 import { useState } from 'react'
 import type { Reagent, TrackerSnapshot } from '../../shared/types'
-import { canCraft, materialAvailability, unscannedBanks, type MaterialSource } from '../../shared/materials'
+import { canCraft, materialAvailability, unscannedBanks } from '../../shared/materials'
 import { wowheadItemUrl } from '../../shared/wowhead'
-import { ageText } from './format'
+import { sourceLabel } from './format'
 import { WowheadLink } from './WowheadLink'
 
-function sourceLabel(s: MaterialSource, now: number): string {
-  const seen = `seen ${ageText(s.seenAt, now)}`
-  if (s.container === 'accountBank') return `Account bank · ${s.count} · ${seen}`
-  return `${s.characterName} · ${s.container === 'bags' ? 'Bags' : 'Bank'} ${s.count} · ${seen}`
-}
 
 export interface MaterialsPanelProps {
   recipeName: string

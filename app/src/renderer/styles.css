@@ -107,3 +107,23 @@ main { flex: 1; min-height: 0; overflow: auto; }
   .recipe .source { display: none; }
 }
 .setup-actions { display: flex; align-items: center; gap: 16px; }
+
+.alts { padding: 16px; display: flex; flex-direction: column; gap: 18px; max-width: 1000px; }
+.search-input { width: 100%; max-width: 420px; padding: 8px 12px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+.search-results { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.hit { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.hit-head { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.hit-total { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--accent); }
+.hit ul { list-style: none; margin: 6px 0 0; padding: 0; }
+.hit li { font-size: 13px; color: var(--muted); }
+.hit li.stale { opacity: 0.75; }
+.alts-table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.alts-table th, .alts-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.alts-table thead th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.alts-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.alts-table tfoot th, .alts-table tfoot td { border-bottom: none; font-weight: 700; background: var(--panel-2); }
+.alt-char { display: flex; align-items: center; gap: 8px; }
+.money .gold { color: #f2c94c; }
+.money .silver { color: #c9d1d9; }
+.money .copper { color: #d08a52; }

@@ -1,4 +1,5 @@
 import type { StaticRecipe } from '../../shared/types'
+import type { MaterialSource } from '../../shared/materials'
 
 const SOURCE_LABEL: Record<StaticRecipe['source']['type'], string> = {
   trainer: 'Trainer',
@@ -25,4 +26,11 @@ export function ageText(seenAt: number, now: number): string {
   if (days <= 0) return 'today'
   if (days === 1) return 'yesterday'
   return `${days} days ago`
+}
+
+/** e.g. "Thrall · Bank 8 · seen 4 days ago" or "Account bank · 20 · seen today" */
+export function sourceLabel(s: MaterialSource, now: number): string {
+  const seen = `seen ${ageText(s.seenAt, now)}`
+  if (s.container === 'accountBank') return `Account bank · ${s.count} · ${seen}`
+  return `${s.characterName} · ${s.container === 'bags' ? 'Bags' : 'Bank'} ${s.count} · ${seen}`
 }
