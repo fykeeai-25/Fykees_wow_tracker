@@ -74,6 +74,15 @@ function character(key: string, v: Obj): Character {
   return c
 }
 
+export const SUPPORTED_SCHEMA = 2
+
+export class AddonNewerError extends Error {
+  constructor() {
+    super('The addon is newer than the app – please update AzerothTracker.')
+    this.name = 'AddonNewerError'
+  }
+}
+
 /** Turns the parsed AzerothTrackerDB table into a TrackerSnapshot. Tolerant: bad fields are dropped. */
 export function normalize(raw: unknown): TrackerSnapshot {
   const db = isObj(raw) ? raw : {}

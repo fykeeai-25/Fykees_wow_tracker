@@ -12,45 +12,148 @@
   "recipes": [
     {
       "name": "Minor Healing Potion",
+      "spellId": 2330,
+      "createdItemId": 118,
       "learnAt": 1,
-      "skillRange": { "yellow": 55, "green": 75, "gray": 95 },
-      "source": { "type": "trainer", "cost": 0 },
-      "reagents": [ { "itemId": 2447, "count": 1 }, { "itemId": 2449, "count": 1 } ]
+      "skillRange": {
+        "yellow": 55,
+        "green": 75,
+        "gray": 95
+      },
+      "source": {
+        "type": "trainer",
+        "cost": 0
+      },
+      "reagents": [
+        {
+          "itemId": 2447,
+          "count": 1
+        },
+        {
+          "itemId": 2449,
+          "count": 1
+        }
+      ]
     },
     {
       "name": "Elixir of Lion's Strength",
+      "spellId": 2329,
+      "createdItemId": 2454,
       "learnAt": 1,
-      "skillRange": { "yellow": 45, "green": 65, "gray": 85 },
-      "source": { "type": "trainer", "cost": 0 },
-      "reagents": [ { "itemId": 2449, "count": 1 }, { "itemId": 765, "count": 1 } ]
+      "skillRange": {
+        "yellow": 45,
+        "green": 65,
+        "gray": 85
+      },
+      "source": {
+        "type": "trainer",
+        "cost": 0
+      },
+      "reagents": [
+        {
+          "itemId": 2449,
+          "count": 1
+        },
+        {
+          "itemId": 765,
+          "count": 1
+        }
+      ]
     },
     {
       "name": "Lesser Healing Potion",
+      "spellId": 2337,
+      "createdItemId": 858,
       "learnAt": 55,
-      "skillRange": { "yellow": 85, "green": 105, "gray": 125 },
-      "source": { "type": "trainer", "cost": 150 },
-      "reagents": [ { "itemId": 2447, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+      "skillRange": {
+        "yellow": 85,
+        "green": 105,
+        "gray": 125
+      },
+      "source": {
+        "type": "trainer",
+        "cost": 150
+      },
+      "reagents": [
+        {
+          "itemId": 2447,
+          "count": 1
+        },
+        {
+          "itemId": 2450,
+          "count": 1
+        }
+      ]
     },
     {
       "name": "Swiftness Potion",
+      "spellId": 2335,
+      "createdItemId": 2459,
       "learnAt": 60,
-      "skillRange": { "yellow": 90, "green": 110, "gray": 130 },
-      "source": { "type": "vendor", "cost": 500 },
-      "reagents": [ { "itemId": 2452, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+      "skillRange": {
+        "yellow": 90,
+        "green": 110,
+        "gray": 130
+      },
+      "source": {
+        "type": "vendor",
+        "cost": 500
+      },
+      "reagents": [
+        {
+          "itemId": 2452,
+          "count": 1
+        },
+        {
+          "itemId": 2450,
+          "count": 1
+        }
+      ]
     },
     {
       "name": "Elixir of Wisdom",
+      "spellId": 3171,
+      "createdItemId": 3383,
       "learnAt": 145,
-      "skillRange": { "yellow": 175, "green": 195, "gray": 215 },
-      "source": { "type": "trainer", "cost": 900 },
-      "reagents": [ { "itemId": 2453, "count": 2 } ]
+      "skillRange": {
+        "yellow": 175,
+        "green": 195,
+        "gray": 215
+      },
+      "source": {
+        "type": "trainer",
+        "cost": 900
+      },
+      "reagents": [
+        {
+          "itemId": 2453,
+          "count": 2
+        }
+      ]
     },
     {
       "name": "Healing Potion",
+      "spellId": 3447,
+      "createdItemId": 929,
       "learnAt": 145,
-      "skillRange": { "yellow": 175, "green": 195, "gray": 215 },
-      "source": { "type": "drop" },
-      "reagents": [ { "itemId": 2453, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+      "skillRange": {
+        "yellow": 175,
+        "green": 195,
+        "gray": 215
+      },
+      "source": {
+        "type": "drop"
+      },
+      "reagents": [
+        {
+          "itemId": 2453,
+          "count": 1
+        },
+        {
+          "itemId": 2450,
+          "count": 1
+        }
+      ]
     }
   ]
 }

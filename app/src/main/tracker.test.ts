@@ -3,7 +3,7 @@ import { join } from 'path'
 import { rmSync } from 'fs'
 import { createTracker, type WatchFn } from './tracker'
 import { readConfig, writeConfig } from './config'
-import { tempDir, fakeGame, putSavedVariables, fixturePath } from '../../test/tmp'
+import { tempDir, fakeGame, putSavedVariables, fixturePath, writeText } from '../../test/tmp'
 import type { AppState } from '../shared/types'
 
 function setup(accounts: string[]) {
@@ -98,6 +98,30 @@ describe('tracker', () => {
     if (load.status !== 'ok') throw new Error(load.status)
     expect(load.snapshot.characters).toHaveLength(2)
     expect(load.warning).toBeUndefined()
+  })
+
+  it('addon newer with previous good → ok with the update message', () => {
+    const t = setup(['ACC1'])
+    const file = putSavedVariables(t.game, 'ACC1', 'AzerothTracker.lua')
+    t.tracker.start()
+    t.tracker.setGameDir(t.game)
+    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 3 }')
+    t.watched.at(-1)!.onChange()
+    const load = ready(t.tracker.getState()).load
+    if (load.status !== 'ok') throw new Error(load.status)
+    expect(load.warning).toBe('The addon is newer than the app – please update AzerothTracker.')
+  })
+
+  it('addon newer without previous → error with the update message', () => {
+    const t = setup(['ACC1'])
+    const file = putSavedVariables(t.game, 'ACC1', 'AzerothTracker.lua')
+    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 3 }')
+    t.tracker.start()
+    t.tracker.setGameDir(t.game)
+    expect(ready(t.tracker.getState()).load).toEqual({
+      status: 'error',
+      message: 'The addon is newer than the app – please update AzerothTracker.'
+    })
   })
 
   it('truncated with no previous → error', () => {

@@ -1,6 +1,6 @@
 
 AzerothTrackerDB = {
-	["schemaVersion"] = 1,
+	["schemaVersion"] = 2,
 	["itemNames"] = {
 		[2447] = "Peacebloom",
 		[2449] = "Earthroot",
@@ -25,7 +25,12 @@ AzerothTrackerDB = {
 					["maxSkill"] = 150,
 					["scannedAt"] = 1761980000,
 					["recipes"] = {
-						["Minor Healing Potion"] = {
+						["spell:2330"] = {
+							["spellId"] = 2330,
+							["name"] = "Minor Healing Potion",
+							["createdItemId"] = 118,
+							["numMade"] = 1,
+							["difficulty"] = "gray",
 							["reagents"] = {
 								{
 									["itemId"] = 2447,

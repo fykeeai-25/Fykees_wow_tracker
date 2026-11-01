@@ -10,8 +10,15 @@ export interface Reagent {
   count: number
 }
 
+export type Difficulty = 'orange' | 'yellow' | 'green' | 'gray'
+
 export interface KnownRecipe {
   name: string
+  spellId?: number
+  createdItemId?: number
+  numMade?: number
+  /** colour the game showed at scan time */
+  difficulty?: Difficulty
   reagents: Reagent[]
 }
 
@@ -46,6 +53,8 @@ export interface TrackerSnapshot {
 
 export interface StaticRecipe {
   name: string
+  spellId?: number
+  createdItemId?: number
   learnAt: number
   skillRange: { yellow: number; green: number; gray: number }
   source: { type: 'trainer' | 'vendor' | 'drop' | 'quest' | 'unknown'; cost?: number }

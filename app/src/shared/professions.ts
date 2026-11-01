@@ -1,6 +1,6 @@
-import type { KnownRecipe, Profession, ProfessionData, StaticRecipe } from './types'
+import type { Difficulty, KnownRecipe, Profession, ProfessionData, StaticRecipe } from './types'
 
-export type Difficulty = 'orange' | 'yellow' | 'green' | 'gray'
+export type { Difficulty }
 
 export interface RecipeView {
   recipe: StaticRecipe

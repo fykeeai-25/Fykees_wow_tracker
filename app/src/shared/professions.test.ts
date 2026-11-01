@@ -50,6 +50,19 @@ describe('classifyRecipes', () => {
     expect(names(c.availableNext)).toEqual(['Lesser Healing Potion'])
   })
 
+  it('matches a known recipe by spellId even if names differ', () => {
+    const p: Profession = { name: 'Alchemy', skill: 142, maxSkill: 150, knownRecipes: [{ name: 'Minor Healing Draught', spellId: 2330, reagents: [] }] }
+    const c = classifyRecipes(p, alchemy)
+    expect(names(c.known)).toEqual(['Minor Healing Potion'])
+    expect(c.unknownKnown).toEqual([])
+  })
+
+  it('matches by name when the static recipe has no spellId', () => {
+    const data = { ...alchemy, recipes: alchemy.recipes.map((r) => ({ ...r, spellId: undefined })) }
+    const p: Profession = { name: 'Alchemy', skill: 142, maxSkill: 150, knownRecipes: [{ name: 'Minor Healing Potion', spellId: 2330, reagents: [] }] }
+    expect(names(classifyRecipes(p, data).known)).toEqual(['Minor Healing Potion'])
+  })
+
   it('nothing left to learn → availableNext empty', () => {
     const p: Profession = { name: 'Alchemy', skill: 300, maxSkill: 300, knownRecipes: [] }
     expect(classifyRecipes(p, alchemy).availableNext).toEqual([])

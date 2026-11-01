@@ -68,6 +68,22 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(c.professions.map((p) => p.name)).toEqual(['Alchemy', 'Cooking', 'Herbalism'])
   })
 
+  it('writes schema 2 with spell id, created item, numMade and game difficulty', () => {
+    const s = run()
+    expect(s.schemaVersion).toBe(2)
+    const alch = s.characters[0].professions.find((p) => p.name === 'Alchemy')!
+    const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')!
+    expect(mhp).toMatchObject({ spellId: 2330, createdItemId: 118, numMade: 1, difficulty: 'gray' })
+    const lion = alch.knownRecipes!.find((r) => r.name === "Elixir of Lion's Strength")!
+    expect(lion.difficulty).toBe('green')
+  })
+
+  it('an uncached reagent never overwrites a complete recipe', () => {
+    const alch = run('uncached-reagent').characters[0].professions.find((p) => p.name === 'Alchemy')!
+    const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')!
+    expect(mhp.reagents).toHaveLength(2)
+  })
+
   it('collapsing a recipe category keeps the hidden recipes', () => {
     const alch = run('collapsed-recipes').characters[0].professions.find((p) => p.name === 'Alchemy')!
     expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])

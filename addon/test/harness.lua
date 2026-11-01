@@ -29,17 +29,34 @@ GetSkillLineInfo = function(i)
   return l[1], l[2], l[3], l[4], 0, 0, l[5]
 end
 
-local recipes = {
+-- { name, type, reagents, spellId, createdItemId, createdItemName }
+recipes = {
   { "Potions", "header" },
-  { "Minor Healing Potion", "trivial", { { 2447, "Peacebloom", 1 }, { 2449, "Earthroot", 1 } } },
-  { "Elixir of Lion's Strength", "trivial", { { 2449, "Earthroot", 1 }, { 765, "Silverleaf", 1 } } },
+  { "Minor Healing Potion", "trivial", { { 2447, "Peacebloom", 1 }, { 2449, "Earthroot", 1 } }, 2330, 118, "Minor Healing Potion" },
+  { "Elixir of Lion's Strength", "easy", { { 2449, "Earthroot", 1 }, { 765, "Silverleaf", 1 } }, 2329, 2454, "Elixir of Lion's Strength" },
 }
+local uncachedReagent = false
 GetTradeSkillLine = function() return "Alchemy", 142, 150 end
 GetNumTradeSkills = function() return #recipes end
 GetTradeSkillInfo = function(i) return recipes[i][1], recipes[i][2] end
 GetTradeSkillNumReagents = function(i) return recipes[i][3] and #recipes[i][3] or 0 end
 GetTradeSkillReagentInfo = function(i, r) local x = recipes[i][3][r] return x[2], "icon", x[3], 0 end
-GetTradeSkillReagentItemLink = function(i, r) local x = recipes[i][3][r] return link(x[1], x[2]) end
+GetTradeSkillReagentItemLink = function(i, r)
+  if uncachedReagent and i == 2 and r == 2 then return nil end
+  local x = recipes[i][3][r]
+  return link(x[1], x[2])
+end
+GetTradeSkillRecipeLink = function(i)
+  local x = recipes[i]
+  if not x[4] then return nil end
+  return "|cffffd000|Henchant:" .. x[4] .. "|h[" .. x[1] .. "]|h|r"
+end
+GetTradeSkillItemLink = function(i)
+  local x = recipes[i]
+  if not x[5] then return nil end
+  return link(x[5], x[6])
+end
+GetTradeSkillNumMade = function() return 1, 1 end
 GetCraftDisplaySkillLine = function() return nil end
 
 local containers = {
@@ -91,6 +108,10 @@ if scenario == "collapsed-professions" then
     { "Swords", false, false, 101, 120 },
   }
   fire("SKILL_LINES_CHANGED")
+elseif scenario == "uncached-reagent" then
+  -- reopening the window while one reagent item is not cached by the client
+  uncachedReagent = true
+  fire("TRADE_SKILL_UPDATE")
 elseif scenario == "collapsed-recipes" then
   -- player collapses the "Potions" category in the profession window
   recipes = { { "Potions", "header" } }
