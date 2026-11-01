@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { itemName, materialAvailability, STALE_AFTER_SECONDS, unscannedBanks } from './materials'
-import { alchemy, fixtureSnapshot, FIXTURE_NOW } from '../../test/snapshot'
+import { alchemy, sampleItems, fixtureSnapshot, FIXTURE_NOW } from '../../test/snapshot'
 
 const mhp = alchemy.recipes.find((r) => r.name === 'Minor Healing Potion')!
 
 describe('materialAvailability', () => {
   it('sums bags, bank and account bank across characters', () => {
-    const rows = materialAvailability(mhp.reagents, fixtureSnapshot(), alchemy, FIXTURE_NOW)
+    const rows = materialAvailability(mhp.reagents, fixtureSnapshot(), sampleItems, FIXTURE_NOW)
     const peace = rows.find((r) => r.itemId === 2447)!
     expect(peace.name).toBe('Peacebloom')
     expect(peace.needed).toBe(1)
@@ -23,14 +23,14 @@ describe('materialAvailability', () => {
   })
 
   it('multiplier scales needed and enough', () => {
-    const rows = materialAvailability(mhp.reagents, fixtureSnapshot(), alchemy, FIXTURE_NOW, 5)
+    const rows = materialAvailability(mhp.reagents, fixtureSnapshot(), sampleItems, FIXTURE_NOW, 5)
     const earth = rows.find((r) => r.itemId === 2449)!
     expect(earth.needed).toBe(5)
     expect(earth.enough).toBe(false)
   })
 
   it('item nobody has → total 0, no sources', () => {
-    const rows = materialAvailability([{ itemId: 2453, count: 2 }], fixtureSnapshot(), alchemy, FIXTURE_NOW)
+    const rows = materialAvailability([{ itemId: 2453, count: 2 }], fixtureSnapshot(), sampleItems, FIXTURE_NOW)
     expect(rows).toEqual([{ itemId: 2453, name: 'Bruiseweed', needed: 2, total: 0, enough: false, sources: [] }])
   })
 
@@ -43,10 +43,10 @@ describe('itemName', () => {
   it('prefers static data, then addon names, then fallback', () => {
     const s = fixtureSnapshot()
     s.itemNames[5555] = 'Addon Thing'
-    expect(itemName(765, s, alchemy)).toBe('Silverleaf')
-    expect(itemName(5555, s, alchemy)).toBe('Addon Thing')
+    expect(itemName(765, s, sampleItems)).toBe('Silverleaf')
+    expect(itemName(5555, s, sampleItems)).toBe('Addon Thing')
     expect(itemName(2447, s)).toBe('Peacebloom')
-    expect(itemName(99999, s, alchemy)).toBe('Item #99999')
+    expect(itemName(99999, s, sampleItems)).toBe('Item #99999')
   })
 })
 

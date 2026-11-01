@@ -2,19 +2,23 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, fireEvent, within, cleanup } from '@testing-library/react'
 import { ProfessionsView } from './ProfessionsView'
-import { fixtureSnapshot, FIXTURE_NOW } from '../../../test/snapshot'
+import { fixtureSnapshot, samplePack, FIXTURE_NOW } from '../../../test/snapshot'
+import { DataProvider } from '../DataContext'
+import type { ReactElement } from 'react'
+
+const withData = (ui: ReactElement) => <DataProvider value={{ pack: samplePack(), source: 'bundled' }}>{ui}</DataProvider>
 
 afterEach(cleanup)
 
 function openThrall(profession: string) {
-  render(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />)
+  render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
   fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
   fireEvent.click(screen.getByRole('button', { name: new RegExp(profession) }))
 }
 
 describe('ProfessionsView', () => {
   it('lists all characters', () => {
-    render(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />)
+    render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
     expect(screen.getByRole('button', { name: /Thrall/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Jaina/ })).toBeTruthy()
   })
@@ -63,20 +67,20 @@ describe('ProfessionsView', () => {
     const s = fixtureSnapshot()
     const thrall = s.characters.find((c) => c.name === 'Thrall')!
     delete thrall.professions.find((p) => p.name === 'Alchemy')!.knownRecipes
-    render(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />)
+    render(withData(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />))
     fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
     fireEvent.click(screen.getByRole('button', { name: /Alchemy/ }))
     expect(screen.getByText('Open the profession window in game and type /reload.')).toBeTruthy()
   })
 
   it('character without professions', () => {
-    render(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />)
+    render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
     fireEvent.click(screen.getByRole('button', { name: /Jaina/ }))
     expect(screen.getByText('This character has no professions yet.')).toBeTruthy()
   })
 
   it('empty snapshot', () => {
-    render(<ProfessionsView snapshot={{ schemaVersion: 1, characters: [], itemNames: {} }} now={FIXTURE_NOW} />)
+    render(withData(<ProfessionsView snapshot={{ schemaVersion: 1, characters: [], itemNames: {} }} now={FIXTURE_NOW} />))
     expect(screen.getByText('No characters yet – log in and type /reload.')).toBeTruthy()
   })
 })

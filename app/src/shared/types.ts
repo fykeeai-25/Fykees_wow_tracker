@@ -63,8 +63,20 @@ export interface StaticRecipe {
 
 export interface ProfessionData {
   profession: string
-  items: Record<string, string>
   recipes: StaticRecipe[]
+}
+
+export interface DataPack {
+  manifest: { dataSchema: number; dataVersion: number; generatedAt: string }
+  /** item id (as string) → item name */
+  items: Record<string, string>
+  professions: ProfessionData[]
+}
+
+export interface DataState {
+  pack: DataPack
+  source: 'bundled' | 'downloaded'
+  lastCheck?: { at: number; ok: boolean; error?: string }
 }
 
 export type LoadState =
