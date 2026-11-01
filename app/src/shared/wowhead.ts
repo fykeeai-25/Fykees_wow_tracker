@@ -1,13 +1,14 @@
+/** Wowhead pages for WoW: Forever. Opened in the user's browser; never fetched by the app. */
 export const WOWHEAD_BASE = 'https://www.wowhead.com/forever/'
 
-export function wowheadItemUrl(_id: number): string {
-  throw new Error('not implemented')
+export function wowheadItemUrl(id: number): string {
+  return `${WOWHEAD_BASE}item=${id}`
 }
 
-export function wowheadSpellUrl(_id: number): string {
-  throw new Error('not implemented')
+export function wowheadSpellUrl(id: number): string {
+  return `${WOWHEAD_BASE}spell=${id}`
 }
 
-export function isWowheadUrl(_url: string): boolean {
-  throw new Error('not implemented')
+export function isWowheadUrl(url: string): boolean {
+  return url.startsWith('https://www.wowhead.com/')
 }

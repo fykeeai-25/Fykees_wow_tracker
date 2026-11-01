@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AppState, DataState } from '../shared/types'
 import { DataProvider } from './DataContext'
 import { modules } from './modules'
 import { SetupScreen } from './SetupScreen'
 import { StatusBar } from './StatusBar'
+import { SettingsPopover } from './SettingsPopover'
 
 const nowSeconds = () => Math.floor(Date.now() / 1000)
 
@@ -13,6 +14,7 @@ export function App() {
   const [now, setNow] = useState(nowSeconds)
   const [moduleId, setModuleId] = useState(modules[0].id)
   const [showSettings, setShowSettings] = useState(false)
+  const closeSettings = useCallback(() => setShowSettings(false), [])
 
   useEffect(() => {
     window.azeroth.getState().then(setState)
@@ -51,22 +53,17 @@ export function App() {
             </button>
           ))}
         </nav>
-        <button className="gear" aria-label="Settings" onClick={() => setShowSettings((v) => !v)}>
+        <button
+          className="gear"
+          aria-label="Settings"
+          aria-expanded={showSettings}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={() => setShowSettings((v) => !v)}
+        >
           ⚙
         </button>
       </header>
-      {showSettings && (
-        <div className="settings">
-          <div>
-            <span className="muted">Game folder</span> <code>{state.gameDir}</code>
-          </div>
-          <div>
-            <span className="muted">Account</span> <code>{state.account}</code>
-          </div>
-          <button onClick={() => window.azeroth.chooseGameDir()}>Change folder</button>
-          <button onClick={() => window.azeroth.setAccount('')}>Change account</button>
-        </div>
-      )}
+      {showSettings && <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} />}
       <main>
         {state.load.status === 'ok' ? (
           <active.Component snapshot={state.load.snapshot} now={now} />

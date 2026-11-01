@@ -27,8 +27,20 @@ export function itemName(id: number, snapshot: TrackerSnapshot, items?: Record<s
   return items?.[String(id)] ?? snapshot.itemNames[id] ?? `Item #${id}`
 }
 
-export function canCraft(_rows: MaterialRow[]): { count: number; limitedBy?: string; missing?: string } {
-  throw new Error('not implemented')
+/** How many crafts the owned materials allow, and which reagent limits it. */
+export function canCraft(rows: MaterialRow[]): { count: number; limitedBy?: string; missing?: string } {
+  if (rows.length === 0) return { count: 0 }
+  let min = Infinity
+  let limitedBy: string | undefined
+  for (const r of rows) {
+    const n = Math.floor(r.total / r.perCraft)
+    if (n < min) {
+      min = n
+      limitedBy = r.name
+    }
+  }
+  if (min > 0) return { count: min, limitedBy }
+  return { count: 0, missing: rows.find((r) => r.total < r.perCraft)?.name }
 }
 
 export function materialAvailability(

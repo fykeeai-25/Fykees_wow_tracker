@@ -8,8 +8,8 @@ export interface SetupScreenProps {
 
 const REASON: Record<'missing-dir' | 'missing-wtf' | 'no-accounts', string> = {
   'missing-dir': 'This folder does not exist.',
-  'missing-wtf': 'This folder has no WTF folder – pick the folder that contains Interface and WTF.',
-  'no-accounts': 'There is no account in WTF/Account – log in to the game once.'
+  'missing-wtf': "That isn't the game folder. Pick the one with Interface and WTF, usually …\\_forever_.",
+  'no-accounts': 'No WoW account found in WTF/Account. Log in to the game once, then try again.'
 }
 
 export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreenProps) {
@@ -18,7 +18,7 @@ export function SetupScreen({ state, onChooseDir, onSelectAccount }: SetupScreen
       <h1>AzerothTracker</h1>
       {state.phase === 'needs-account' ? (
         <>
-          <p>This folder has several WoW accounts. Pick the one to track:</p>
+          <p>Several accounts found. Which one should AzerothTracker follow?</p>
           <div className="accounts">
             {state.accounts.map((a) => (
               <button key={a} onClick={() => onSelectAccount(a)}>

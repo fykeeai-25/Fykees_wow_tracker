@@ -1,18 +1,14 @@
 import { useState } from 'react'
 import type { Reagent, TrackerSnapshot } from '../../shared/types'
-import { materialAvailability, unscannedBanks, type MaterialSource } from '../../shared/materials'
+import { canCraft, materialAvailability, unscannedBanks, type MaterialSource } from '../../shared/materials'
+import { wowheadItemUrl } from '../../shared/wowhead'
 import { ageText } from './format'
+import { WowheadLink } from './WowheadLink'
 
-const CONTAINER_LABEL: Record<MaterialSource['container'], string> = {
-  bags: 'bags',
-  bank: 'bank',
-  accountBank: 'Account bank'
-}
-
-function sourceLabel(s: MaterialSource): string {
-  return s.container === 'accountBank'
-    ? `${CONTAINER_LABEL.accountBank} ${s.count}`
-    : `${s.characterName} – ${CONTAINER_LABEL[s.container]} ${s.count}`
+function sourceLabel(s: MaterialSource, now: number): string {
+  const seen = `seen ${ageText(s.seenAt, now)}`
+  if (s.container === 'accountBank') return `Account bank · ${s.count} · ${seen}`
+  return `${s.characterName} · ${s.container === 'bags' ? 'Bags' : 'Bank'} ${s.count} · ${seen}`
 }
 
 export interface MaterialsPanelProps {
@@ -26,41 +22,52 @@ export interface MaterialsPanelProps {
 export function MaterialsPanel({ recipeName, reagents, snapshot, items, now }: MaterialsPanelProps) {
   const [qty, setQty] = useState(1)
   const rows = materialAvailability(reagents, snapshot, items, now, qty)
+  const craft = canCraft(rows)
   const unscanned = unscannedBanks(snapshot)
   return (
     <section className="materials" aria-label="Materials">
       <header>
         <h3>{recipeName}</h3>
         <label>
-          Quantity
-          <input
-            type="number"
-            min={1}
-            value={qty}
-            onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
-          />
+          Craft ×
+          <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
         </label>
       </header>
-      {rows.length === 0 && <p className="muted">This recipe needs no materials.</p>}
+      {rows.length === 0 ? (
+        <p className="muted">This recipe needs no materials.</p>
+      ) : (
+        <p className={`craftable ${craft.count > 0 ? 'yes' : 'no'}`}>
+          {craft.count > 0 ? `Can craft ${craft.count}× · limited by ${craft.limitedBy}` : `Can craft – missing ${craft.missing}`}
+        </p>
+      )}
       {rows.map((row) => (
         <div key={row.itemId} className={`material ${row.enough ? 'enough' : 'missing'}`}>
           <div className="material-head">
-            <span>{row.name}</span>
-            <span className="count">{`${row.needed} / ${row.total}`}</span>
+            <span className="mark" aria-hidden>
+              {row.enough ? '✓' : '✗'}
+            </span>
+            <span className="material-name">{row.name}</span>
+            <WowheadLink url={wowheadItemUrl(row.itemId)} label={row.name} />
+            <span className="count">{`Need ${row.needed} · Have ${row.total}`}</span>
           </div>
           <ul>
             {row.sources.map((s, i) => (
               <li key={i} className={s.stale ? 'stale' : undefined} title={s.stale ? 'May be outdated' : undefined}>
-                {`${sourceLabel(s)} (${ageText(s.seenAt, now)})`}
+                {s.stale && (
+                  <span className="clock" aria-hidden>
+                    🕒{' '}
+                  </span>
+                )}
+                {sourceLabel(s, now)}
               </li>
             ))}
             {row.sources.length === 0 && <li className="muted">Not found anywhere</li>}
           </ul>
         </div>
       ))}
-      {unscanned.length > 0 && (
-        <p className="muted unscanned">{`Bank not scanned yet: ${unscanned.map((u) => u.characterName).join(', ')}`}</p>
-      )}
+      {unscanned.map((u) => (
+        <p key={u.characterKey} className="muted unscanned">{`${u.characterName}'s bank isn't scanned. Open it in game, then /reload.`}</p>
+      ))}
     </section>
   )
 }
