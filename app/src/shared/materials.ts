@@ -50,3 +50,7 @@ export function materialAvailability(
     return { itemId: r.itemId, name: itemName(r.itemId, snapshot, data), needed, total, enough: total >= needed, sources }
   })
 }
+
+export function unscannedBanks(_snapshot: TrackerSnapshot): { characterKey: string; characterName: string }[] {
+  return []
+}

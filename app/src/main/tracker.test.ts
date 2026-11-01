@@ -87,6 +87,19 @@ describe('tracker', () => {
     expect(load.warning).toBe('Soubor se nepodařilo načíst, zobrazuji poslední platná data.')
   })
 
+  it('file briefly missing after good → keeps last snapshot', () => {
+    const t = setup(['ACC1'])
+    const file = putSavedVariables(t.game, 'ACC1', 'AzerothTracker.lua')
+    t.tracker.start()
+    t.tracker.setGameDir(t.game)
+    rmSync(file)
+    t.watched.at(-1)!.onChange()
+    const load = ready(t.tracker.getState()).load
+    if (load.status !== 'ok') throw new Error(load.status)
+    expect(load.snapshot.characters).toHaveLength(2)
+    expect(load.warning).toBeUndefined()
+  })
+
   it('truncated with no previous → error', () => {
     const t = setup(['ACC1'])
     putSavedVariables(t.game, 'ACC1', 'truncated.lua')

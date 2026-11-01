@@ -40,6 +40,12 @@ describe('ProfessionsView', () => {
     expect(within(panel).getByText(/Banka účtu 20/)).toBeTruthy()
   })
 
+  it('warns about banks that were never scanned', () => {
+    openThrall('Alchemy')
+    fireEvent.click(screen.getByText('Minor Healing Potion'))
+    expect(screen.getByText('Banka nenaskenována: Jaina')).toBeTruthy()
+  })
+
   it('quantity scales needed amounts', () => {
     openThrall('Alchemy')
     fireEvent.click(screen.getByText('Minor Healing Potion'))

@@ -10,12 +10,14 @@ const lua = ['lua5.1', 'lua'].find((bin) => spawnSync(bin, ['-v']).status === 0)
 // Runs the real addon against a mocked WoW API (addon/test/harness.lua) and checks
 // that the app can read what it writes. CI installs lua5.1; skipped locally without Lua.
 describe.skipIf(!lua)('addon → app contract', () => {
-  const run = () =>
+  const run = (scenario = 'default') =>
     normalize(
       parseSavedVariables(
-        execFileSync(lua!, [join(repo, 'addon/test/harness.lua'), join(repo, 'addon/AzerothTracker/AzerothTracker.lua')], {
-          encoding: 'utf8'
-        })
+        execFileSync(
+          lua!,
+          [join(repo, 'addon/test/harness.lua'), join(repo, 'addon/AzerothTracker/AzerothTracker.lua'), scenario],
+          { encoding: 'utf8' }
+        )
       )
     )
 
@@ -51,5 +53,23 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(s.characters[0].bank).toEqual({ seenAt: 1761980000, items: { 2447: 8 } })
     expect(s.itemNames).toMatchObject({ 765: 'Silverleaf', 2447: 'Peacebloom', 2449: 'Earthroot' })
     expect(s.accountBank).toBeUndefined()
+  })
+
+  it('collapsing one skill header keeps the hidden professions and their recipes', () => {
+    const c = run('collapsed-professions').characters[0]
+    const alch = c.professions.find((p) => p.name === 'Alchemy')
+    expect(alch?.knownRecipes).toHaveLength(2)
+    expect(c.professions.find((p) => p.name === 'Herbalism')?.skill).toBe(160)
+    expect(c.professions.find((p) => p.name === 'Cooking')?.skill).toBe(51)
+  })
+
+  it('records professions even when the header text differs from TRADE_SKILLS', () => {
+    const c = run('global-mismatch').characters[0]
+    expect(c.professions.map((p) => p.name)).toEqual(['Alchemy', 'Cooking', 'Herbalism'])
+  })
+
+  it('collapsing a recipe category keeps the hidden recipes', () => {
+    const alch = run('collapsed-recipes').characters[0].professions.find((p) => p.name === 'Alchemy')!
+    expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])
   })
 })

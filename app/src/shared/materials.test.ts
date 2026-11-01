@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { itemName, materialAvailability, STALE_AFTER_SECONDS } from './materials'
+import { itemName, materialAvailability, STALE_AFTER_SECONDS, unscannedBanks } from './materials'
 import { alchemy, fixtureSnapshot, FIXTURE_NOW } from '../../test/snapshot'
 
 const mhp = alchemy.recipes.find((r) => r.name === 'Minor Healing Potion')!
@@ -47,5 +47,11 @@ describe('itemName', () => {
     expect(itemName(5555, s, alchemy)).toBe('Addon Thing')
     expect(itemName(2447, s)).toBe('Peacebloom')
     expect(itemName(99999, s, alchemy)).toBe('Item #99999')
+  })
+})
+
+describe('unscannedBanks', () => {
+  it('lists characters whose bank was never seen', () => {
+    expect(unscannedBanks(fixtureSnapshot())).toEqual([{ characterKey: 'Firemaw-Jaina', characterName: 'Jaina' }])
   })
 })

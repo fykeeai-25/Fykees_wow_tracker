@@ -1,6 +1,6 @@
 -- Runs AzerothTracker.lua against a minimal mocked WoW Classic API, fires a
 -- login / profession window / bank sequence and prints AzerothTrackerDB in
--- SavedVariables format to stdout. Usage: lua5.1 harness.lua <AzerothTracker.lua>
+-- SavedVariables format to stdout. Usage: lua5.1 harness.lua <AzerothTracker.lua> [scenario]
 
 local function link(id, name) return "|cffffffff|Hitem:" .. id .. "::::::::|h[" .. name .. "]|h|r" end
 
@@ -71,12 +71,32 @@ local function fire(event, ...)
     if f.events[event] and f.handler then f.handler(f, event, ...) end
   end
 end
+local scenario = arg[2] or "default"
+if scenario == "global-mismatch" then TRADE_SKILLS = "Trade Skills" end
+
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
 fire("TRADE_SKILL_SHOW")
 fire("BANKFRAME_OPENED")
 fire("BAG_UPDATE", 0)
 fire("BANKFRAME_CLOSED")
+
+if scenario == "collapsed-professions" then
+  -- player collapses "Professions" in the skill panel; Secondary Skills stays open
+  skillLines = {
+    { "Professions", true, false },
+    { "Secondary Skills", true, true },
+    { "Cooking", false, false, 51, 75 },
+    { "Weapon Skills", true, true },
+    { "Swords", false, false, 101, 120 },
+  }
+  fire("SKILL_LINES_CHANGED")
+elseif scenario == "collapsed-recipes" then
+  -- player collapses the "Potions" category in the profession window
+  recipes = { { "Potions", "header" } }
+  fire("TRADE_SKILL_UPDATE")
+end
+
 fire("PLAYER_LOGOUT")
 SlashCmdList["AZEROTHTRACKER"]("")
 
