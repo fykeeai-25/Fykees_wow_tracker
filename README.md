@@ -4,6 +4,41 @@ A companion app for **World of Warcraft: Forever** in the style of AlecaFrame. I
 separate window on a second monitor (Windows) and reads the data that the AzerothTracker
 addon collects in game.
 
+## What it does – in short
+
+AzerothTracker is a **personal tracker for your own characters**. It shows what your alts have
+(professions, recipes, materials, gold, currencies, where an item is) in a separate window on a
+second monitor. It gives no advantage in combat or gameplay – it is a notebook that fills itself in.
+
+**How it works**
+
+1. The **addon** (inside the game) reads your own character through the official WoW addon API:
+   level and class, professions and skill, learned recipes, bags, bank (when you open it), gold
+   and currencies. It writes this to its SavedVariables file – a normal text file the game
+   saves to disk on `/reload`, logout or character switch.
+2. The **app** (outside the game) reads that file from your WoW folder and shows the data.
+   It never touches the game itself.
+
+**What it does NOT do (fair-play rules we keep)**
+
+- It never reads or changes the game's memory and never modifies game files.
+- It never presses keys, clicks or automates anything in the game (no botting).
+- It never uses or calculates combat data (no rotations, timers, target marking or similar).
+- It never collects data about other players – only your own characters on your account.
+- The addon is free, open source, has no ads and asks for no donations in game
+  (Blizzard's addon policy).
+
+**Your data**
+
+- Everything stays on your computer. There is no account, no telemetry and no upload.
+- The only network request the app makes is downloading the public game-data pack
+  (recipes, item names) from this repository's `data-latest` release. Links to Wowhead open in
+  your browser only when you click them.
+
+This is a fan project, not affiliated with or endorsed by Blizzard Entertainment. World of
+Warcraft is a trademark of Blizzard Entertainment. Blizzard's terms of service and addon policy
+always apply.
+
 - Design: [`docs/specs/2026-11-01-azerothtracker-design.md`](docs/specs/2026-11-01-azerothtracker-design.md)
 - Plan: [`docs/plans/2026-11-01-azerothtracker-v1.md`](docs/plans/2026-11-01-azerothtracker-v1.md)
 

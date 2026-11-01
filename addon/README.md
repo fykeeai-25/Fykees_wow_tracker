@@ -1,7 +1,20 @@
 # AzerothTracker addon
 
-Collects data in game for the AzerothTracker app and saves it to SavedVariables
-(`AzerothTrackerDB`).
+Collects data about **your own characters** for the AzerothTracker app and saves it to
+SavedVariables (`AzerothTrackerDB`). It only reads (through the official addon API) and never
+acts in the game, never uses combat data and never collects data about other players.
+
+## What it records
+
+| Data | When |
+|---|---|
+| Name, realm, race, class, level | login, level-up, logout |
+| Professions and skill | login, skill changes |
+| Learned recipes (spell ID, reagents, difficulty colour) | when a profession window is open |
+| Bag contents | login, bag changes, logout |
+| Bank contents (and account bank, if the game has one) | while the bank is open |
+| Gold and currencies | login, changes, logout |
+| Item names of items it has seen | together with the above |
 
 ## Install
 
