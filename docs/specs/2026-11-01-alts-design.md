@@ -1,7 +1,7 @@
 # AzerothTracker – Alts module design (v1: item search, gold & currencies)
 
 Date: 2026-11-01
-Status: approved in chat (owner: "continue with the Alts overview, item search and gold")
+Status: implemented 2026-11-01; approved in chat (owner: "continue with the Alts overview, item search and gold")
 Builds on: `2026-11-01-azerothtracker-design.md`, `2026-11-01-prelaunch-design.md`
 
 ## Goal

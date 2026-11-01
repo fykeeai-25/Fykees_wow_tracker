@@ -7,6 +7,11 @@ addon collects in game.
 - Design: [`docs/specs/2026-11-01-azerothtracker-design.md`](docs/specs/2026-11-01-azerothtracker-design.md)
 - Plan: [`docs/plans/2026-11-01-azerothtracker-v1.md`](docs/plans/2026-11-01-azerothtracker-v1.md)
 
+## Modules
+
+- **Professions** – known / learnable recipes with difficulty, materials across all characters' bags and banks.
+- **Alts** – find any item across all characters ("where is my item?"), gold and currencies per character with totals.
+
 ## Layout
 
 ```
