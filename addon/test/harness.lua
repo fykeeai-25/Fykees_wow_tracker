@@ -10,6 +10,14 @@ UnitName = function() return "Thrall" end
 UnitRace = function() return "Orc", "Orc" end
 UnitClass = function() return "Shaman", "SHAMAN" end
 UnitLevel = function() return 24 end
+GetMoney = function() return 123456 end
+C_CurrencyInfo = {
+  GetCurrencyListSize = function() return 2 end,
+  GetCurrencyListInfo = function(i)
+    if i == 1 then return { name = "Forever", isHeader = true } end
+    return { name = "Merchant's Favor", isHeader = false, quantity = 7, currencyTypesID = 3101 }
+  end,
+}
 print = function(...) io.stderr:write(table.concat({ ... }, " "), "\n") end
 
 TRADE_SKILLS = "Professions"
@@ -80,6 +88,7 @@ CreateFrame = function()
 end
 SlashCmdList = {}
 
+if (arg[2] or "") == "no-currency-api" then C_CurrencyInfo = nil end
 local chunk = assert(loadfile(arg[1]))
 chunk("AzerothTracker")
 

@@ -70,7 +70,7 @@ describe.skipIf(!lua)('addon → app contract', () => {
 
   it('writes schema 2 with spell id, created item, numMade and game difficulty', () => {
     const s = run()
-    expect(s.schemaVersion).toBe(2)
+    expect(s.schemaVersion).toBe(3)
     const alch = s.characters[0].professions.find((p) => p.name === 'Alchemy')!
     const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')!
     expect(mhp).toMatchObject({ spellId: 2330, createdItemId: 118, numMade: 1, difficulty: 'gray' })
@@ -88,6 +88,17 @@ describe.skipIf(!lua)('addon → app contract', () => {
     const alch = run('cache-arrives').characters[0].professions.find((p) => p.name === 'Alchemy')!
     const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')
     expect(mhp?.reagents).toHaveLength(2)
+  })
+
+  it('writes money and currencies', () => {
+    const c = run().characters[0]
+    expect(c).toMatchObject({ money: 123456, moneyAt: 1761980000, currencies: { "Merchant's Favor": 7 } })
+  })
+
+  it('writes no currencies when the client has no currency API', () => {
+    const c = run('no-currency-api').characters[0]
+    expect(c.money).toBe(123456)
+    expect(c.currencies).toBeUndefined()
   })
 
   it('collapsing a recipe category keeps the hidden recipes', () => {

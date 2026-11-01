@@ -105,7 +105,7 @@ describe('tracker', () => {
     const file = putSavedVariables(t.game, 'ACC1', 'AzerothTracker.lua')
     t.tracker.start()
     t.tracker.setGameDir(t.game)
-    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 3 }')
+    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 4 }')
     t.watched.at(-1)!.onChange()
     const load = ready(t.tracker.getState()).load
     if (load.status !== 'ok') throw new Error(load.status)
@@ -115,7 +115,7 @@ describe('tracker', () => {
   it('addon newer without previous → error with the update message', () => {
     const t = setup(['ACC1'])
     const file = putSavedVariables(t.game, 'ACC1', 'AzerothTracker.lua')
-    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 3 }')
+    writeText(file, 'AzerothTrackerDB = { ["schemaVersion"] = 4 }')
     t.tracker.start()
     t.tracker.setGameDir(t.game)
     expect(ready(t.tracker.getState()).load).toEqual({

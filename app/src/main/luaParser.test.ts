@@ -11,7 +11,7 @@ type Any = any
 describe('parseSavedVariables', () => {
   it('parses fixture', () => {
     const db = parseSavedVariables(fixture('AzerothTracker.lua')) as Any
-    expect(db.schemaVersion).toBe(2)
+    expect(db.schemaVersion).toBe(3)
     expect(db.characters['Firemaw-Thrall'].professions.Alchemy.skill).toBe(142)
     expect(db.characters['Firemaw-Thrall'].bags.items[2447]).toBe(4)
   })

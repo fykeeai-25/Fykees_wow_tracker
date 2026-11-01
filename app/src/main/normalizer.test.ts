@@ -46,7 +46,7 @@ describe('normalize', () => {
   })
 
   it('missing optional sections default', () => {
-    const s = normalize({ schemaVersion: 2 })
+    const s = normalize({ schemaVersion: 3 })
     expect(s.characters).toEqual([])
     expect(s.itemNames).toEqual({})
     expect(s.accountBank).toBeUndefined()
@@ -54,7 +54,7 @@ describe('normalize', () => {
 
   it('drops wrongly typed fields instead of throwing', () => {
     const s = normalize({
-      schemaVersion: 2,
+      schemaVersion: 3,
       characters: { 'R-X': { name: 'X', level: 'high', professions: 'nope', bags: { items: { 5: 'two' } } } }
     })
     expect(s.characters[0].level).toBe(0)
@@ -75,7 +75,7 @@ describe('normalize', () => {
 
   it('name falls back to the key and bad difficulty is dropped', () => {
     const s = normalize({
-      schemaVersion: 2,
+      schemaVersion: 3,
       characters: { 'R-X': { professions: { Alchemy: { skill: 1, maxSkill: 75, recipes: { 'Odd Brew': { difficulty: 'purple', reagents: [] } } } } } }
     })
     const r = s.characters[0].professions[0].knownRecipes![0]
@@ -84,12 +84,28 @@ describe('normalize', () => {
   })
 
   it('newer addon schema → AddonNewerError', () => {
-    expect(() => normalize({ schemaVersion: 3 })).toThrow(AddonNewerError)
-    expect(() => normalize({ schemaVersion: 3 })).toThrow('The addon is newer than the app – please update AzerothTracker.')
+    expect(() => normalize({ schemaVersion: 4 })).toThrow(AddonNewerError)
+    expect(() => normalize({ schemaVersion: 4 })).toThrow('The addon is newer than the app – please update AzerothTracker.')
+  })
+
+  it('reads money and currencies', () => {
+    const [jaina, thrall] = normalize(raw()).characters
+    expect(thrall).toMatchObject({ money: 123456, moneyAt: 1761980000, currencies: { "Merchant's Favor": 7 } })
+    expect(jaina.money).toBe(5000)
+    expect(jaina.currencies).toBeUndefined()
+  })
+
+  it('drops non-numeric money and currency counts', () => {
+    const s = normalize({
+      schemaVersion: 3,
+      characters: { 'R-X': { money: 'lots', currencies: { Honor: { count: 'x' }, Favor: { count: 3 } } } }
+    })
+    expect(s.characters[0].money).toBeUndefined()
+    expect(s.characters[0].currencies).toEqual({ Favor: 3 })
   })
 
   it('rejects old schemaVersion', () => {
-    expect(() => normalize({ schemaVersion: 1 })).toThrow('Unsupported schemaVersion 1')
+    expect(() => normalize({ schemaVersion: 2 })).toThrow('Unsupported schemaVersion 2')
   })
 
   it('rebaseTimes shifts every timestamp so the newest equals now', () => {

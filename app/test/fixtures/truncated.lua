@@ -1,6 +1,6 @@
 
 AzerothTrackerDB = {
-	["schemaVersion"] = 2,
+	["schemaVersion"] = 3,
 	["itemNames"] = {
 		[2447] = "Peacebloom",
 		[2449] = "Earthroot",
@@ -19,6 +19,14 @@ AzerothTrackerDB = {
 			["class"] = "SHAMAN",
 			["level"] = 24,
 			["updatedAt"] = 1761980000,
+			["money"] = 123456,
+			["moneyAt"] = 1761980000,
+			["currencies"] = {
+				["Merchant's Favor"] = {
+					["id"] = 3101,
+					["count"] = 7,
+				},
+			},
 			["professions"] = {
 				["Alchemy"] = {
 					["skill"] = 142,
@@ -45,5 +53,3 @@ AzerothTrackerDB = {
 					},
 				},
 				["Herbalism"] = {
-					["skill"] = 160,
-					["maxSkill"] = 225,
