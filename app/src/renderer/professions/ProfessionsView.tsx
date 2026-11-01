@@ -185,3 +185,8 @@ export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; 
     </div>
   )
 }
+
+// Stub for the dashboard split (implemented next).
+export function ProfessionsDetail(_props: { character: import('../../shared/types').Character; snapshot: TrackerSnapshot; now: number }) {
+  return null
+}

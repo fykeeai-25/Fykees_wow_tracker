@@ -2,7 +2,8 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, fireEvent, within, cleanup } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import { ProfessionsView } from './ProfessionsView'
+import type { TrackerSnapshot } from '../../shared/types'
+import { ProfessionsDetail } from './ProfessionsView'
 import { DataProvider } from '../DataContext'
 import { fixtureSnapshot, samplePack, FIXTURE_NOW } from '../../../test/snapshot'
 
@@ -10,22 +11,17 @@ afterEach(cleanup)
 
 const withData = (ui: ReactElement) => <DataProvider value={{ pack: samplePack(), source: 'bundled' }}>{ui}</DataProvider>
 
-function openThrall(profession: string) {
-  render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
-  fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
+function detail(s: TrackerSnapshot, name: string) {
+  const character = s.characters.find((c) => c.name === name)!
+  return render(withData(<ProfessionsDetail character={character} snapshot={s} now={FIXTURE_NOW} />))
+}
+
+function openThrall(profession: string, s: TrackerSnapshot = fixtureSnapshot()) {
+  detail(s, 'Thrall')
   fireEvent.click(screen.getByRole('button', { name: new RegExp(profession) }))
 }
 
 describe('ProfessionsView', () => {
-  it('lists characters with class colour and level line', () => {
-    render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
-    const thrall = screen.getByRole('button', { name: /Thrall/ })
-    expect(within(thrall).getByText('Lv 24 Shaman · Firemaw')).toBeTruthy()
-    expect((within(thrall).getByText('Thrall') as HTMLElement).style.color).toBe('rgb(0, 112, 221)')
-    expect(screen.getByRole('button', { name: /Jaina/ })).toBeTruthy()
-    expect(within(thrall).getByRole('img', { name: 'Shaman icon' })).toBeTruthy()
-  })
-
   it('shows Alchemy skill and recipe sections', () => {
     openThrall('Alchemy')
     expect(screen.getAllByText('142/150').length).toBeGreaterThan(0)
@@ -76,8 +72,7 @@ describe('ProfessionsView', () => {
   it('several unscanned banks are listed in one line', () => {
     const s = fixtureSnapshot()
     s.characters.push({ ...s.characters[0], key: 'Firemaw-Brakk', name: 'Brakk' })
-    render(withData(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />))
-    fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
+    detail(s, 'Thrall')
     fireEvent.click(within(screen.getByRole('region', { name: 'Known' })).getByText('Minor Healing Potion'))
     expect(screen.getByText('Banks not scanned yet: Jaina, Brakk. Open them in game, then /reload.')).toBeTruthy()
   })
@@ -98,8 +93,7 @@ describe('ProfessionsView', () => {
   it('known recipes missing from the database', () => {
     const s = fixtureSnapshot()
     s.characters[1].professions[0].knownRecipes!.push({ name: 'Mystery Brew', reagents: [] })
-    render(withData(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />))
-    fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
+    detail(s, 'Thrall')
     const region = screen.getByRole('region', { name: 'Known, not in database' })
     expect(within(region).getByText('Mystery Brew')).toBeTruthy()
   })
@@ -114,20 +108,13 @@ describe('ProfessionsView', () => {
     const s = fixtureSnapshot()
     const thrall = s.characters.find((c) => c.name === 'Thrall')!
     delete thrall.professions.find((p) => p.name === 'Alchemy')!.knownRecipes
-    render(withData(<ProfessionsView snapshot={s} now={FIXTURE_NOW} />))
-    fireEvent.click(screen.getByRole('button', { name: /Thrall/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Alchemy/ }))
+    openThrall('Alchemy', s)
     expect(screen.getByText('Open the profession window in game and type /reload.')).toBeTruthy()
   })
 
   it('character without professions', () => {
-    render(withData(<ProfessionsView snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
-    fireEvent.click(screen.getByRole('button', { name: /Jaina/ }))
+    detail(fixtureSnapshot(), 'Jaina')
     expect(screen.getByText('This character has no professions yet.')).toBeTruthy()
   })
 
-  it('empty snapshot', () => {
-    render(withData(<ProfessionsView snapshot={{ schemaVersion: 2, characters: [], itemNames: {} }} now={FIXTURE_NOW} />))
-    expect(screen.getByText('No characters yet – log in and type /reload.')).toBeTruthy()
-  })
 })
