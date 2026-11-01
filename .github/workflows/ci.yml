@@ -22,6 +22,9 @@ jobs:
       - name: Test
         if: success() || failure()
         run: npm test
+      - name: Build
+        if: success() || failure()
+        run: npm run build
       - name: Check addon
         run: npm run --if-present check:addon
       - name: Product name check
