@@ -1,0 +1,56 @@
+{
+  "_sample": true,
+  "profession": "Alchemy",
+  "items": {
+    "765": "Silverleaf",
+    "2447": "Peacebloom",
+    "2449": "Earthroot",
+    "2450": "Briarthorn",
+    "2452": "Swiftthistle",
+    "2453": "Bruiseweed"
+  },
+  "recipes": [
+    {
+      "name": "Minor Healing Potion",
+      "learnAt": 1,
+      "skillRange": { "yellow": 55, "green": 75, "gray": 95 },
+      "source": { "type": "trainer", "cost": 0 },
+      "reagents": [ { "itemId": 2447, "count": 1 }, { "itemId": 2449, "count": 1 } ]
+    },
+    {
+      "name": "Elixir of Lion's Strength",
+      "learnAt": 1,
+      "skillRange": { "yellow": 45, "green": 65, "gray": 85 },
+      "source": { "type": "trainer", "cost": 0 },
+      "reagents": [ { "itemId": 2449, "count": 1 }, { "itemId": 765, "count": 1 } ]
+    },
+    {
+      "name": "Lesser Healing Potion",
+      "learnAt": 55,
+      "skillRange": { "yellow": 85, "green": 105, "gray": 125 },
+      "source": { "type": "trainer", "cost": 150 },
+      "reagents": [ { "itemId": 2447, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+    },
+    {
+      "name": "Swiftness Potion",
+      "learnAt": 60,
+      "skillRange": { "yellow": 90, "green": 110, "gray": 130 },
+      "source": { "type": "vendor", "cost": 500 },
+      "reagents": [ { "itemId": 2452, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+    },
+    {
+      "name": "Elixir of Wisdom",
+      "learnAt": 145,
+      "skillRange": { "yellow": 175, "green": 195, "gray": 215 },
+      "source": { "type": "trainer", "cost": 900 },
+      "reagents": [ { "itemId": 2453, "count": 2 } ]
+    },
+    {
+      "name": "Healing Potion",
+      "learnAt": 145,
+      "skillRange": { "yellow": 175, "green": 195, "gray": 215 },
+      "source": { "type": "drop" },
+      "reagents": [ { "itemId": 2453, "count": 1 }, { "itemId": 2450, "count": 1 } ]
+    }
+  ]
+}
