@@ -1,0 +1,7 @@
+## Interface: 11507
+## Title: AzerothTracker
+## Notes: Sbírá data o profesích a inventáři pro aplikaci AzerothTracker.
+## Version: 0.1.0
+## SavedVariables: AzerothTrackerDB
+
+AzerothTracker.lua
