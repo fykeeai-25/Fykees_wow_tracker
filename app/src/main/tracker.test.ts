@@ -84,7 +84,7 @@ describe('tracker', () => {
     const load = ready(t.tracker.getState()).load
     if (load.status !== 'ok') throw new Error(load.status)
     expect(load.snapshot.characters).toHaveLength(2)
-    expect(load.warning).toBe('Soubor se nepodařilo načíst, zobrazuji poslední platná data.')
+    expect(load.warning).toBe('Could not read the file, showing the last valid data.')
   })
 
   it('file briefly missing after good → keeps last snapshot', () => {

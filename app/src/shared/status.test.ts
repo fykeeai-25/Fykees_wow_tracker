@@ -9,22 +9,22 @@ describe('statusText', () => {
   const ok = { status: 'ok' as const, snapshot: fixtureSnapshot(), fileUpdatedAt: AT_1432 }
 
   it('same day → time only', () => {
-    expect(statusText(ok, AT_1432 + 3600, 'Europe/Prague')).toBe('Data z /reload v 14:32')
+    expect(statusText(ok, AT_1432 + 3600, 'Europe/Prague')).toBe('Data from /reload at 14:32')
   })
 
   it('other day → date and time', () => {
-    expect(statusText(ok, AT_1432 + 2 * 86400, 'Europe/Prague')).toBe('Data z /reload 1. 11. v 14:32')
+    expect(statusText(ok, AT_1432 + 2 * 86400, 'Europe/Prague')).toBe('Data from /reload on 1 Nov at 14:32')
   })
 
   it('warning is appended', () => {
-    expect(statusText({ ...ok, warning: 'Pozor' }, AT_1432 + 60, 'Europe/Prague')).toBe('Data z /reload v 14:32 – Pozor')
+    expect(statusText({ ...ok, warning: 'Careful' }, AT_1432 + 60, 'Europe/Prague')).toBe('Data from /reload at 14:32 – Careful')
   })
 
   it('missing', () => {
-    expect(statusText({ status: 'missing' }, 0)).toBe('Zatím žádná data – nainstaluj addon, přihlas se a dej /reload.')
+    expect(statusText({ status: 'missing' }, 0)).toBe('No data yet – install the addon, log in and type /reload.')
   })
 
   it('error', () => {
-    expect(statusText({ status: 'error', message: 'boom' }, 0)).toBe('Chyba načítání: boom')
+    expect(statusText({ status: 'error', message: 'boom' }, 0)).toBe('Load error: boom')
   })
 })

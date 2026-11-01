@@ -11,8 +11,8 @@ describe('SetupScreen', () => {
     render(
       <SetupScreen state={{ phase: 'needs-game-dir', reason: 'missing-wtf' }} onChooseDir={onChooseDir} onSelectAccount={vi.fn()} />
     )
-    expect(screen.getByText('Ve složce chybí WTF – vyber složku, kde jsou Interface a WTF.')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Vybrat složku hry' }))
+    expect(screen.getByText('This folder has no WTF folder – pick the folder that contains Interface and WTF.')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Choose game folder' }))
     expect(onChooseDir).toHaveBeenCalled()
   })
 
@@ -20,9 +20,9 @@ describe('SetupScreen', () => {
     const { rerender } = render(
       <SetupScreen state={{ phase: 'needs-game-dir', reason: 'missing-dir' }} onChooseDir={vi.fn()} onSelectAccount={vi.fn()} />
     )
-    expect(screen.getByText('Složka neexistuje.')).toBeTruthy()
+    expect(screen.getByText('This folder does not exist.')).toBeTruthy()
     rerender(<SetupScreen state={{ phase: 'needs-game-dir', reason: 'no-accounts' }} onChooseDir={vi.fn()} onSelectAccount={vi.fn()} />)
-    expect(screen.getByText('Ve složce WTF/Account není žádný účet – přihlas se jednou do hry.')).toBeTruthy()
+    expect(screen.getByText('There is no account in WTF/Account – log in to the game once.')).toBeTruthy()
   })
 
   it('lets the user pick one of several accounts', () => {
