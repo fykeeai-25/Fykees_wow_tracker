@@ -41,7 +41,7 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .setup h1 { color: var(--accent); margin-top: 0; }
 .accounts { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 
-.professions { display: grid; grid-template-columns: 220px 1fr; height: 100%; }
+.professions { display: grid; grid-template-columns: 220px minmax(0, 1fr); height: 100%; }
 .characters { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-right: 1px solid var(--border); background: var(--panel); }
 .characters button { text-align: left; display: flex; flex-direction: column; gap: 2px; }
 .char-name { font-weight: 700; }
@@ -52,7 +52,7 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .profession-head h2 { margin: 0; }
 .skill { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
 .skill-bar { flex: 1; max-width: 240px; height: 6px; accent-color: var(--accent); }
-.profession-body { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-top: 12px; }
+.profession-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; margin-top: 12px; }
 .recipes ul, .materials ul { list-style: none; margin: 0; padding: 0; }
 .recipes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 16px 0 6px; }
 .recipe-row { display: flex; align-items: stretch; gap: 4px; margin-bottom: 4px; }
@@ -93,3 +93,14 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .popover dd { margin: 0; word-break: break-all; }
 .popover-actions { display: flex; gap: 8px; margin-bottom: 12px; }
 .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.recipe .req, .recipe .source { white-space: nowrap; }
+.character-detail, .recipe-columns { min-width: 0; }
+@media (max-width: 1000px) {
+  .professions { grid-template-columns: 170px minmax(0, 1fr); }
+  .profession-body { grid-template-columns: minmax(0, 1fr); }
+  .materials { position: static; }
+  .recipe .source { min-width: 0; }
+}
+@media (max-width: 760px) {
+  .recipe .source { display: none; }
+}
