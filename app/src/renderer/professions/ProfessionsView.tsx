@@ -3,8 +3,6 @@ import type { Character, KnownRecipe, Profession, ProfessionData, StaticRecipe, 
 import { classifyRecipes, type Difficulty, type RecipeView } from '../../shared/professions'
 import { wowheadItemUrl, wowheadSpellUrl } from '../../shared/wowhead'
 import { useGameData } from '../DataContext'
-import { classColor, className } from '../classColors'
-import { ClassIcon } from '../ClassIcon'
 import { MaterialsPanel } from './MaterialsPanel'
 import { sourceText } from './format'
 import { WowheadLink } from './WowheadLink'
@@ -149,31 +147,6 @@ export function ProfessionsDetail({ character, snapshot, now }: { character: Cha
         ))}
       </div>
       <ProfessionDetail key={`${character.key}/${profession.name}`} profession={profession} snapshot={snapshot} now={now} />
-    </div>
-  )
-}
-
-/** Legacy tab view (character list + detail); removed when the dashboard shell lands. */
-export function ProfessionsView({ snapshot, now }: { snapshot: TrackerSnapshot; now: number }) {
-  const [charKey, setCharKey] = useState(snapshot.characters[0]?.key)
-  if (snapshot.characters.length === 0) return <p className="hint">No characters yet – log in and type /reload.</p>
-  const character = snapshot.characters.find((c) => c.key === charKey) ?? snapshot.characters[0]
-  return (
-    <div className="professions">
-      <nav className="characters" aria-label="Characters">
-        {snapshot.characters.map((c) => (
-          <button key={c.key} className={c.key === character.key ? 'active' : undefined} onClick={() => setCharKey(c.key)}>
-            <ClassIcon token={c.className} size={34} />
-            <span className="char-text">
-              <span className="char-name" style={{ color: classColor(c.className) }}>
-                {c.name}
-              </span>
-              <span className="char-line muted">{`Lv ${c.level} ${className(c.className)} · ${c.realm}`}</span>
-            </span>
-          </button>
-        ))}
-      </nav>
-      <ProfessionsDetail key={character.key} character={character} snapshot={snapshot} now={now} />
     </div>
   )
 }

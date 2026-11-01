@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppState, DataState } from '../shared/types'
 import { DataProvider } from './DataContext'
-import { modules } from './modules'
 import { SetupScreen } from './SetupScreen'
 import { StatusBar } from './StatusBar'
 import { SettingsPopover } from './SettingsPopover'
+import { CharacterList } from './CharacterList'
+import { Dashboard } from './Dashboard'
+import { ItemSearch } from './ItemSearch'
 
 const nowSeconds = () => Math.floor(Date.now() / 1000)
 
@@ -12,8 +14,9 @@ export function App() {
   const [state, setState] = useState<AppState>()
   const [data, setData] = useState<DataState>()
   const [now, setNow] = useState(nowSeconds)
-  const [moduleId, setModuleId] = useState(modules[0].id)
+  const [selectedKey, setSelectedKey] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const closeSettings = useCallback(() => setShowSettings(false), [])
 
   useEffect(() => {
@@ -22,10 +25,15 @@ export function App() {
     window.azeroth.getData().then(setData)
     const offData = window.azeroth.onData(setData)
     const timer = setInterval(() => setNow(nowSeconds()), 30_000)
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setSearchOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
     return () => {
       off()
       offData()
       clearInterval(timer)
+      document.removeEventListener('keydown', onKey)
     }
   }, [])
 
@@ -41,45 +49,60 @@ export function App() {
     )
   }
 
-  const active = modules.find((m) => m.id === moduleId) ?? modules[0]
+  const snapshot = state.load.status === 'ok' ? state.load.snapshot : undefined
+  const character = snapshot && (snapshot.characters.find((c) => c.key === selectedKey) ?? snapshot.characters[0])
+
   return (
     <DataProvider value={data}>
-    <div className="app">
-      <header className="topbar">
-        <span className="brand">AzerothTracker</span>
-        <nav className="tabs">
-          {modules.map((m) => (
-            <button key={m.id} className={m.id === active.id ? 'active' : undefined} onClick={() => setModuleId(m.id)}>
-              {m.label}
-            </button>
-          ))}
-        </nav>
-        <button
-          className="gear"
-          aria-label="Settings"
-          aria-expanded={showSettings}
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={() => setShowSettings((v) => !v)}
-        >
-          ⚙
-        </button>
-      </header>
-      {showSettings && <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} />}
-      <main>
-        {state.load.status === 'ok' ? (
-          <active.Component snapshot={state.load.snapshot} now={now} />
-        ) : (
-          <div className="hint">
-            <p>No addon data yet.</p>
-            <p className="muted">
-              Copy the addon to <code>{`${state.gameDir}\\Interface\\AddOns\\AzerothTracker`}</code>, log in and type{' '}
-              <code>/reload</code>.
-            </p>
+      <div className="app">
+        <header className="topbar">
+          <span className="brand">AzerothTracker</span>
+          <StatusBar load={state.load} now={now} data={data} demo={state.demo} />
+          <button
+            className="search-toggle"
+            aria-label="Toggle search"
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen((v) => !v)}
+          >
+            🔍
+          </button>
+          <button
+            className="gear"
+            aria-label="Settings"
+            aria-expanded={showSettings}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => setShowSettings((v) => !v)}
+          >
+            ⚙
+          </button>
+        </header>
+        {showSettings && <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} />}
+        {snapshot ? (
+          <div className={`layout ${searchOpen ? 'search-open' : ''}`}>
+            <CharacterList snapshot={snapshot} now={now} selectedKey={character?.key} onSelect={setSelectedKey} />
+            <main className="center">
+              {character ? (
+                <Dashboard character={character} snapshot={snapshot} now={now} />
+              ) : (
+                <p className="hint">No characters yet – log in and type /reload.</p>
+              )}
+            </main>
+            <aside className="search-column" aria-label="Search">
+              <ItemSearch snapshot={snapshot} now={now} />
+            </aside>
           </div>
+        ) : (
+          <main className="center">
+            <div className="hint">
+              <p>No addon data yet.</p>
+              <p className="muted">
+                Copy the addon to <code>{`${state.gameDir}\\Interface\\AddOns\\AzerothTracker`}</code>, log in and type{' '}
+                <code>/reload</code>.
+              </p>
+            </div>
+          </main>
         )}
-      </main>
-      <StatusBar load={state.load} now={now} data={data} demo={state.demo} />
-    </div>
+      </div>
     </DataProvider>
   )
 }

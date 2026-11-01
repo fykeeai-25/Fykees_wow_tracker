@@ -1,19 +1,9 @@
 import type { FC } from 'react'
 import type { Character, TrackerSnapshot } from '../shared/types'
-import { ProfessionsDetail, ProfessionsView } from './professions/ProfessionsView'
+import { ProfessionsDetail } from './professions/ProfessionsView'
 import { ProfessionsSummary } from './professions/ProfessionsSummary'
 import { AltsView } from './alts/AltsView'
 
-export interface ModuleDef {
-  id: string
-  label: string
-  Component: FC<{ snapshot: TrackerSnapshot; now: number }>
-}
-
-export const modules: ModuleDef[] = [
-  { id: 'professions', label: 'Professions', Component: ProfessionsView },
-  { id: 'alts', label: 'Alts', Component: AltsView }
-]
 
 export interface BubbleProps {
   character: Character
