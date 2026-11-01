@@ -7,8 +7,8 @@ addon collects in game.
 ## What it does – in short
 
 AzerothTracker is a **personal tracker for your own characters**. It shows what your alts have
-(professions, recipes, materials, gold, currencies, where an item is) in a separate window on a
-second monitor. It gives no advantage in combat or gameplay – it is a notebook that fills itself in.
+(professions, recipes, materials, gold, currencies, and which of your characters holds an item –
+in which bags or bank) in a separate window on a second monitor. It gives no advantage in combat or gameplay – it is a notebook that fills itself in.
 
 **How it works**
 
@@ -50,7 +50,10 @@ totals), **bubbles** in the middle (a quick summary each; click opens the full v
 
 - **Professions** bubble – skill per profession and what can be learned; full view with recipes,
   difficulty and materials across all characters' bags and banks.
-- **Item search** – "where is my item?" across all characters, banks and the account bank.
+- **Item search** – "which of my characters has this item?" Searches the bags and banks of all
+  your characters on the account (and the account bank), e.g. `Peacebloom 47 = Brakk bags 15 +
+  Thrall bags 4 + Thrall bank 8 + account bank 20`. It does not show where an item drops or is
+  sold in the game world – use Wowhead for that.
 
 ## Layout
 
