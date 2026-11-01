@@ -25,6 +25,13 @@ jobs:
       - name: Build
         if: success() || failure()
         run: npm run build
+      - name: Upload renderer build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: renderer
+          path: app/out/renderer
+          retention-days: 3
       - name: Check addon
         run: npm run --if-present check:addon
       - name: Product name check
