@@ -51,6 +51,7 @@ export function materialAvailability(
   })
 }
 
-export function unscannedBanks(_snapshot: TrackerSnapshot): { characterKey: string; characterName: string }[] {
-  return []
+/** Characters whose bank the addon has never seen (their bank contents are unknown). */
+export function unscannedBanks(snapshot: TrackerSnapshot): { characterKey: string; characterName: string }[] {
+  return snapshot.characters.filter((c) => !c.bank).map((c) => ({ characterKey: c.key, characterName: c.name }))
 }

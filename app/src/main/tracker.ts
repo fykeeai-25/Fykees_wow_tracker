@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from 'fs'
-import { join } from 'path'
+import { join, resolve as resolvePath } from 'path'
 import { watch as chokidarWatch } from 'chokidar'
 import type { AppState, LoadState, TrackerSnapshot } from '../shared/types'
 import { readConfig, writeConfig } from './config'
@@ -25,6 +25,12 @@ export interface Tracker {
 
 export const STALE_FILE_WARNING = 'Soubor se nepodařilo načíst, zobrazuji poslední platná data.'
 
+/** Windows paths are case-insensitive and may be spelled differently; compare a normalized key. */
+function samePathKey(p: string): string {
+  const r = resolvePath(p)
+  return process.platform === 'win32' ? r.toLowerCase() : r
+}
+
 /**
  * Watches the account folder (which always exists) so the file is picked up even when
  * the addon has not written it yet. awaitWriteFinish avoids reading a half-written file.
@@ -36,8 +42,9 @@ export const defaultWatch: WatchFn = (file, onChange) => {
     depth: 1,
     awaitWriteFinish: { stabilityThreshold: 500 }
   })
+  const target = samePathKey(file)
   watcher.on('all', (_event, changed) => {
-    if (changed === file) onChange()
+    if (samePathKey(changed) === target) onChange()
   })
   return () => void watcher.close()
 }
@@ -61,7 +68,8 @@ export function createTracker(opts: TrackerOptions): Tracker {
   }
 
   function load(file: string): LoadState {
-    if (!existsSync(file)) return { status: 'missing' }
+    // The game may replace the file while saving; keep showing the last good data meanwhile.
+    if (!existsSync(file)) return lastGood ? { status: 'ok', ...lastGood } : { status: 'missing' }
     try {
       const snapshot = normalize(parseSavedVariables(readFileSync(file, 'utf8')))
       const fileUpdatedAt = Math.floor(statSync(file).mtimeMs / 1000)

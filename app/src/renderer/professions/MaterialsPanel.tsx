@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ProfessionData, Reagent, TrackerSnapshot } from '../../shared/types'
-import { materialAvailability, type MaterialSource } from '../../shared/materials'
+import { materialAvailability, unscannedBanks, type MaterialSource } from '../../shared/materials'
 import { ageText } from './format'
 
 const CONTAINER_LABEL: Record<MaterialSource['container'], string> = {
@@ -26,6 +26,7 @@ export interface MaterialsPanelProps {
 export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: MaterialsPanelProps) {
   const [qty, setQty] = useState(1)
   const rows = materialAvailability(reagents, snapshot, data, now, qty)
+  const unscanned = unscannedBanks(snapshot)
   return (
     <section className="materials" aria-label="Materiály">
       <header>
@@ -57,6 +58,9 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, data, now }: Ma
           </ul>
         </div>
       ))}
+      {unscanned.length > 0 && (
+        <p className="muted unscanned">{`Banka nenaskenována: ${unscanned.map((u) => u.characterName).join(', ')}`}</p>
+      )}
     </section>
   )
 }

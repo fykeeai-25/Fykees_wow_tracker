@@ -53,7 +53,18 @@ local function updateBasics()
   c.updatedAt = now()
 end
 
+-- English profession names, used in addition to the header globals so a
+-- differing header text never hides professions.
+local KNOWN_PROFESSIONS = {
+  Alchemy = true, Blacksmithing = true, Enchanting = true, Engineering = true,
+  Herbalism = true, Leatherworking = true, Mining = true, Skinning = true,
+  Tailoring = true, Jewelcrafting = true, Inscription = true,
+  Cooking = true, ["First Aid"] = true, Fishing = true,
+}
+
 -- Professions and their skill from the skill panel (primary + secondary).
+-- Rows under a collapsed header are invisible, so a profession is only removed
+-- when every header is expanded and it is really gone (e.g. unlearned).
 local function updateProfessions()
   if not GetNumSkillLines or not GetSkillLineInfo then return end
   local wanted = {}
@@ -61,22 +72,25 @@ local function updateProfessions()
   if SECONDARY_SKILLS then wanted[stripColon(SECONDARY_SKILLS)] = true end
 
   local c = getChar()
-  local found, sawExpandedHeader = {}, false
-  local inWanted = false
+  local seen, allExpanded, inWanted = {}, true, false
   for i = 1, GetNumSkillLines() do
     local name, isHeader, isExpanded, rank, _, _, maxRank = GetSkillLineInfo(i)
     if isHeader then
       inWanted = wanted[stripColon(name)] or false
-      if inWanted and isExpanded then sawExpandedHeader = true end
-    elseif inWanted and name then
+      if not isExpanded then allExpanded = false end
+    elseif name and (inWanted or KNOWN_PROFESSIONS[name]) then
       local p = c.professions[name] or {}
       p.skill = rank or 0
       p.maxSkill = maxRank or 0
-      found[name] = p
+      c.professions[name] = p
+      seen[name] = true
     end
   end
-  -- Collapsed headers hide their rows; never wipe data because of that.
-  if sawExpandedHeader then c.professions = found end
+  if allExpanded then
+    for name in pairs(c.professions) do
+      if not seen[name] then c.professions[name] = nil end
+    end
+  end
   c.updatedAt = now()
 end
 
@@ -85,13 +99,16 @@ local function storeRecipes(profName, rank, maxRank, recipes)
   local p = c.professions[profName] or {}
   if rank then p.skill = rank end
   if maxRank then p.maxSkill = maxRank end
-  p.recipes = recipes
+  -- Merge: collapsed categories or filters in the profession window hide
+  -- recipes, so a scan only adds or updates, never removes.
+  p.recipes = p.recipes or {}
+  for name, recipe in pairs(recipes) do p.recipes[name] = recipe end
   p.scannedAt = now()
   c.professions[profName] = p
 end
 
--- Regular professions (TradeSkill API). Note: active search/filters in the
--- profession window can hide recipes; open it without filters for a full scan.
+-- Regular professions (TradeSkill API). Collapsed categories / filters only
+-- limit what one scan sees; storeRecipes merges, so nothing is lost.
 local function scanTradeSkill()
   if not GetTradeSkillLine or not GetNumTradeSkills then return end
   local profName, rank, maxRank = GetTradeSkillLine()
