@@ -28,8 +28,10 @@ describe('defaultWatch (real file system)', () => {
     expect(await changeIsSeen((d) => join(d, 'AzerothTracker.lua'))).toBe(true)
   }, 10000)
 
-  it('fires even when the watched path is spelled differently', async () => {
-    expect(await changeIsSeen((d) => join(d, '..', 'SavedVariables', 'AzerothTracker.lua'))).toBe(true)
+  // Windows paths are case-insensitive: a folder picked as "c:\\users\\…" must still match
+  // what chokidar reports. Runs on windows-latest in the release workflow.
+  it.runIf(process.platform === 'win32')('fires when the path differs only in letter case (Windows)', async () => {
+    expect(await changeIsSeen((d) => join(d, 'AzerothTracker.lua').toUpperCase())).toBe(true)
   }, 10000)
 
   it('ignores other SavedVariables files', async () => {
