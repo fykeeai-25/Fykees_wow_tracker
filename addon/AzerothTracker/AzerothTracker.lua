@@ -4,6 +4,7 @@
 
 local ADDON_NAME = ...
 local SCHEMA_VERSION = 3
+local ADDON_VERSION = "0.1.0"
 
 local db
 
@@ -94,6 +95,55 @@ local function updateCurrencies()
     end
   end
   c.currencies = list
+end
+
+-- ------------------------------------------------------------ diagnostics
+-- Which WoW API functions this client has (alternatives separated by "|": any one is enough).
+-- Written on login so the app can show what works on WoW: Forever.
+local REQUIRED_APIS = {
+  "GetMoney", "GetRealmName", "UnitName", "UnitRace", "UnitClass", "UnitLevel", "GetBuildInfo",
+  "GetNumSkillLines", "GetSkillLineInfo",
+  "GetTradeSkillLine", "GetNumTradeSkills", "GetTradeSkillInfo", "GetTradeSkillNumReagents",
+  "GetTradeSkillReagentInfo", "GetTradeSkillReagentItemLink", "GetTradeSkillRecipeLink",
+  "GetTradeSkillItemLink", "GetTradeSkillNumMade",
+  "GetCraftDisplaySkillLine", "GetNumCrafts", "GetCraftInfo", "GetCraftNumReagents",
+  "GetCraftReagentInfo", "GetCraftReagentItemLink", "GetCraftRecipeLink|GetCraftItemLink",
+  "C_Container.GetContainerNumSlots|GetContainerNumSlots",
+  "C_Container.GetContainerItemInfo|GetContainerItemInfo",
+  "C_CurrencyInfo.GetCurrencyListSize", "C_CurrencyInfo.GetCurrencyListInfo",
+  "C_Timer.After",
+}
+
+local function apiExists(path)
+  local t = _G
+  for part in string.gmatch(path, "[^%.]+") do
+    if type(t) ~= "table" then return false end
+    t = t[part]
+  end
+  return t ~= nil
+end
+
+local function updateDiagnostics()
+  local build, buildNumber, _, interface = GetBuildInfo()
+  local missing = {}
+  for _, entry in ipairs(REQUIRED_APIS) do
+    local found, first = false, nil
+    for alt in string.gmatch(entry, "[^|]+") do
+      first = first or alt
+      if apiExists(alt) then found = true end
+    end
+    if not found then missing[#missing + 1] = first end
+  end
+  local legacy = {}
+  for name in pairs(_G) do
+    if type(name) == "string" and string.find(name, "Legacy") then legacy[#legacy + 1] = name end
+  end
+  table.sort(legacy)
+  db.diagnostics = {
+    build = build, buildNumber = buildNumber, interface = interface,
+    addonVersion = ADDON_VERSION, checkedAt = now(),
+    missing = missing, legacyApis = legacy,
+  }
 end
 
 -- Professions and their skill from the skill panel (primary + secondary).
@@ -348,6 +398,7 @@ local handlers = {
     db.characters = db.characters or {}
   end,
   PLAYER_LOGIN = function()
+    updateDiagnostics()
     updateBasics()
     updateProfessions()
     updateMoney()
@@ -402,7 +453,16 @@ end
 
 SLASH_AZEROTHTRACKER1 = "/azeroth"
 SLASH_AZEROTHTRACKER2 = "/at"
-SlashCmdList["AZEROTHTRACKER"] = function()
+local function printDiagnostics()
+  updateDiagnostics()
+  local d = db.diagnostics
+  print(string.format("|cffe0b44cAzerothTracker|r %s – client %s (build %s, interface %s)", ADDON_VERSION, tostring(d.build), tostring(d.buildNumber), tostring(d.interface)))
+  print("  Missing APIs: " .. (#d.missing > 0 and table.concat(d.missing, ", ") or "none"))
+  print("  Legacy APIs: " .. (#d.legacyApis > 0 and table.concat(d.legacyApis, ", ") or "none found"))
+end
+
+SlashCmdList["AZEROTHTRACKER"] = function(msg)
+  if msg and string.lower(msg) == "debug" then return printDiagnostics() end
   local chars, profs, recipes = 0, 0, 0
   for _, c in pairs(db.characters) do
     chars = chars + 1

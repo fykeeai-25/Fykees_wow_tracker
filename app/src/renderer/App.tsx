@@ -89,7 +89,9 @@ export function App() {
             ⚙
           </button>
         </header>
-        {showSettings && <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} />}
+        {showSettings && (
+          <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} diagnostics={snapshot?.diagnostics} />
+        )}
         {snapshot ? (
           <div className={`layout ${searchOpen ? 'search-open' : ''}`}>
             <CharacterList snapshot={snapshot} now={now} selectedKey={character?.key} onSelect={setSelectedKey} />

@@ -1,4 +1,4 @@
-import type { Character, Container, Difficulty, KnownRecipe, Profession, Reagent, TrackerSnapshot } from '../shared/types'
+import type { Character, Container, Diagnostics, Difficulty, KnownRecipe, Profession, Reagent, TrackerSnapshot } from '../shared/types'
 
 type Obj = Record<string, unknown>
 
@@ -125,6 +125,20 @@ export class AddonNewerError extends Error {
   }
 }
 
+function diagnostics(v: unknown): Diagnostics | undefined {
+  if (!isObj(v)) return undefined
+  const strings = (x: unknown): string[] => list(x).filter((s): s is string => typeof s === 'string')
+  return {
+    build: str(v.build),
+    buildNumber: str(v.buildNumber),
+    interface: num(v.interface),
+    addonVersion: str(v.addonVersion),
+    checkedAt: num(v.checkedAt),
+    missing: strings(v.missing),
+    legacyApis: strings(v.legacyApis)
+  }
+}
+
 /** Turns the parsed AzerothTrackerDB table into a TrackerSnapshot. Tolerant: bad fields are dropped. */
 export function normalize(raw: unknown): TrackerSnapshot {
   const db = isObj(raw) ? raw : {}
@@ -147,6 +161,8 @@ export function normalize(raw: unknown): TrackerSnapshot {
   }
 
   const snapshot: TrackerSnapshot = { schemaVersion: SUPPORTED_SCHEMA, characters, itemNames }
+  const diag = diagnostics(db.diagnostics)
+  if (diag) snapshot.diagnostics = diag
   const accountBank = container(db.accountBank)
   if (accountBank) snapshot.accountBank = accountBank
   return snapshot

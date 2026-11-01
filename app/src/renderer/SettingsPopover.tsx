@@ -7,7 +7,7 @@ export interface SettingsPopoverProps {
   diagnostics?: import('../shared/types').Diagnostics
 }
 
-export function SettingsPopover({ gameDir, account, onClose }: SettingsPopoverProps) {
+export function SettingsPopover({ gameDir, account, onClose, diagnostics }: SettingsPopoverProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [onTop, setOnTop] = useState(false)
 
@@ -34,6 +34,21 @@ export function SettingsPopover({ gameDir, account, onClose }: SettingsPopoverPr
         <dd>{gameDir}</dd>
         <dt>Account</dt>
         <dd>{account}</dd>
+        <dt>Game client</dt>
+        <dd>
+          {diagnostics ? (
+            <>
+              <div>{`${diagnostics.build} (interface ${diagnostics.interface}) · addon ${diagnostics.addonVersion}`}</div>
+              {diagnostics.missing.length === 0 ? (
+                <div className="ok-text">All APIs the addon needs are available.</div>
+              ) : (
+                <div className="error">{`Missing in this client: ${diagnostics.missing.join(', ')}`}</div>
+              )}
+            </>
+          ) : (
+            <span className="muted">Game client: log in with the addon and type /reload.</span>
+          )}
+        </dd>
       </dl>
       <div className="popover-actions">
         <button onClick={() => window.azeroth.chooseGameDir()}>Change folder</button>

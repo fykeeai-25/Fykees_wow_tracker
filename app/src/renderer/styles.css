@@ -164,3 +164,4 @@ main { flex: 1; min-height: 0; overflow: auto; }
 @container (max-width: 560px) {
   .recipe .source { display: none; }
 }
+.ok-text { color: var(--ok); }
