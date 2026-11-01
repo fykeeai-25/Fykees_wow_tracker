@@ -1,9 +1,9 @@
 -- AzerothTracker: collects character, profession and inventory data into
 -- AzerothTrackerDB (SavedVariables). The desktop app reads the file after
--- /reload, logout or character switch. Format: schemaVersion 2 (see docs/specs).
+-- /reload, logout or character switch. Format: schemaVersion 3 (see docs/specs).
 
 local ADDON_NAME = ...
-local SCHEMA_VERSION = 2
+local SCHEMA_VERSION = 3
 
 local db
 
@@ -61,6 +61,26 @@ local KNOWN_PROFESSIONS = {
   Tailoring = true, Jewelcrafting = true, Inscription = true,
   Cooking = true, ["First Aid"] = true, Fishing = true,
 }
+
+local function updateMoney()
+  if not GetMoney then return end
+  local c = getChar()
+  c.money = GetMoney()
+  c.moneyAt = now()
+end
+
+-- Currencies (e.g. Merchant's Favor), only if this client has the currency API.
+local function updateCurrencies()
+  if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyListSize and C_CurrencyInfo.GetCurrencyListInfo) then return end
+  local list = {}
+  for i = 1, C_CurrencyInfo.GetCurrencyListSize() do
+    local info = C_CurrencyInfo.GetCurrencyListInfo(i)
+    if info and not info.isHeader and info.name then
+      list[info.name] = { id = info.currencyTypesID or info.currencyID, count = info.quantity or 0 }
+    end
+  end
+  getChar().currencies = list
+end
 
 -- Professions and their skill from the skill panel (primary + secondary).
 -- Rows under a collapsed header are invisible, so a profession is only removed
@@ -316,8 +336,12 @@ local handlers = {
   PLAYER_LOGIN = function()
     updateBasics()
     updateProfessions()
+    updateMoney()
+    updateCurrencies()
     scanBags()
   end,
+  PLAYER_MONEY = updateMoney,
+  CURRENCY_DISPLAY_UPDATE = updateCurrencies,
   PLAYER_LEVEL_UP = updateBasics,
   SKILL_LINES_CHANGED = updateProfessions,
   TRADE_SKILL_SHOW = function()
@@ -343,6 +367,8 @@ local handlers = {
   PLAYERBANKSLOTS_CHANGED = scanBank,
   PLAYER_LOGOUT = function()
     updateBasics()
+    updateMoney()
+    updateCurrencies()
     scanBags()
   end,
 }

@@ -42,6 +42,11 @@ export interface Character {
   professions: Profession[]
   bags?: Container
   bank?: Container
+  /** copper */
+  money?: number
+  moneyAt?: number
+  /** currency name → amount */
+  currencies?: Record<string, number>
 }
 
 export interface TrackerSnapshot {

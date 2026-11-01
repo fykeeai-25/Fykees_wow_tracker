@@ -78,6 +78,15 @@ function character(key: string, v: Obj): Character {
     updatedAt: num(v.updatedAt),
     professions
   }
+  if (typeof v.money === 'number') c.money = v.money
+  if (typeof v.moneyAt === 'number') c.moneyAt = v.moneyAt
+  if (isObj(v.currencies)) {
+    const cur: Record<string, number> = {}
+    for (const [n, e] of Object.entries(v.currencies)) {
+      if (isObj(e) && typeof e.count === 'number') cur[n] = e.count
+    }
+    c.currencies = cur
+  }
   const bags = container(v.bags)
   const bank = container(v.bank)
   if (bags) c.bags = bags
@@ -85,7 +94,7 @@ function character(key: string, v: Obj): Character {
   return c
 }
 
-export const SUPPORTED_SCHEMA = 2
+export const SUPPORTED_SCHEMA = 3
 
 /** Shifts every timestamp so the newest one equals `now` (used for demo data). */
 export function rebaseTimes(snapshot: TrackerSnapshot, now: number): TrackerSnapshot {
