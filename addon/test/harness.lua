@@ -11,12 +11,13 @@ UnitRace = function() return "Orc", "Orc" end
 UnitClass = function() return "Shaman", "SHAMAN" end
 UnitLevel = function() return 24 end
 GetMoney = function() return 123456 end
+currencyRows = {
+  { name = "Forever", isHeader = true, isHeaderExpanded = true },
+  { name = "Merchant's Favor", isHeader = false, quantity = 7, currencyTypesID = 3101 },
+}
 C_CurrencyInfo = {
-  GetCurrencyListSize = function() return 2 end,
-  GetCurrencyListInfo = function(i)
-    if i == 1 then return { name = "Forever", isHeader = true } end
-    return { name = "Merchant's Favor", isHeader = false, quantity = 7, currencyTypesID = 3101 }
-  end,
+  GetCurrencyListSize = function() return #currencyRows end,
+  GetCurrencyListInfo = function(i) return currencyRows[i] end,
 }
 print = function(...) io.stderr:write(table.concat({ ... }, " "), "\n") end
 
@@ -118,6 +119,14 @@ if scenario == "collapsed-professions" then
     { "Swords", false, false, 101, 120 },
   }
   fire("SKILL_LINES_CHANGED")
+elseif scenario == "collapsed-currency" then
+  -- player collapses the currency header: its rows are no longer listed
+  currencyRows = { { name = "Forever", isHeader = true, isHeaderExpanded = false } }
+  fire("CURRENCY_DISPLAY_UPDATE")
+elseif scenario == "empty-currency-list" then
+  -- the list is not filled in yet
+  currencyRows = {}
+  fire("CURRENCY_DISPLAY_UPDATE")
 elseif scenario == "cache-arrives" then
   -- first open on a fresh client: one reagent not cached, then the item info arrives
   uncachedReagent = false

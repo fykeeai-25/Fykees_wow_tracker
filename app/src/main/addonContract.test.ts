@@ -95,6 +95,14 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(c).toMatchObject({ money: 123456, moneyAt: 1761980000, currencies: { "Merchant's Favor": 7 } })
   })
 
+  it('a collapsed currency header keeps the hidden currencies', () => {
+    expect(run('collapsed-currency').characters[0].currencies).toEqual({ "Merchant's Favor": 7 })
+  })
+
+  it('an empty currency list never wipes saved currencies', () => {
+    expect(run('empty-currency-list').characters[0].currencies).toEqual({ "Merchant's Favor": 7 })
+  })
+
   it('writes no currencies when the client has no currency API', () => {
     const c = run('no-currency-api').characters[0]
     expect(c.money).toBe(123456)
