@@ -1,7 +1,7 @@
 # AzerothTracker – pre-launch package design
 
 Date: 2026-11-01
-Status: draft for review
+Status: approved and implemented (2026-11-01)
 Builds on: `2026-11-01-azerothtracker-design.md` (v1, Professions)
 Deadline: before WoW: Forever launches (2026-11-04)
 
