@@ -27,10 +27,13 @@ acts in the game, never uses combat data and never collects data about other pla
    logout and when switching characters).
 
 `/azeroth` (or `/at`) prints how much data the addon has collected so far.
+`/azeroth debug` prints the client build, any WoW API functions the addon needs but the client
+lacks, and any Legacy-related API names it found. The same information appears in the app under
+⚙ → Game client after a `/reload`.
 
 ## Manual test after launch (2026-11-04)
 
-- [ ] Run `/dump select(4, GetBuildInfo())` and put the interface number into `## Interface:` in the `.toc`.
+- [ ] Run `/azeroth debug`: note the interface number (put it into `## Interface:` in the `.toc`), the missing APIs (should be none) and the Legacy APIs found (input for the Legacy bubble).
 - [ ] After `/reload`, `WTF\Account\<account>\SavedVariables\AzerothTracker.lua` exists.
 - [ ] The file matches the format in the plan (schemaVersion 1): character, professions with skill, recipes, bags, bank.
 - [ ] `/dump TRADE_SKILLS, SECONDARY_SKILLS` – does it match the headers in the skills window (Professions / Secondary Skills)?
