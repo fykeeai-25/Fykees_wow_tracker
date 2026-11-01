@@ -20,6 +20,8 @@ Příkaz `/azeroth` (nebo `/at`) vypíše, kolik dat addon zatím nasbíral.
 - [ ] V `/dump select(4, GetBuildInfo())` zjistit číslo rozhraní a dát ho do `## Interface:` v `.toc`.
 - [ ] Po `/reload` existuje `WTF\Account\<účet>\SavedVariables\AzerothTracker.lua`.
 - [ ] Soubor odpovídá formátu z plánu (schemaVersion 1): postava, profese se skillem, recepty, tašky, banka.
+- [ ] `/dump TRADE_SKILLS, SECONDARY_SKILLS` – odpovídá to nadpisům v okně skillů (Professions / Secondary Skills)?
+- [ ] Sbalit kategorii v okně profese, dát `/reload` – recepty v aplikaci zůstanou.
 - [ ] Enchanting (Craft API) se zapisuje stejně jako ostatní profese.
 - [ ] Pokud má Forever banku účtu, objeví se `accountBank`.
 - [ ] Aplikace data zobrazí a po dalším `/reload` se sama obnoví.
