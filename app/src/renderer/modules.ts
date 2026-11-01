@@ -2,7 +2,6 @@ import type { FC } from 'react'
 import type { Character, TrackerSnapshot } from '../shared/types'
 import { ProfessionsDetail } from './professions/ProfessionsView'
 import { ProfessionsSummary } from './professions/ProfessionsSummary'
-import { AltsView } from './alts/AltsView'
 
 
 export interface BubbleProps {
