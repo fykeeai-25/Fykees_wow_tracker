@@ -111,7 +111,6 @@ local REQUIRED_APIS = {
   "C_Container.GetContainerNumSlots|GetContainerNumSlots",
   "C_Container.GetContainerItemInfo|GetContainerItemInfo",
   "C_CurrencyInfo.GetCurrencyListSize", "C_CurrencyInfo.GetCurrencyListInfo",
-  "C_Timer.After",
 }
 
 local function apiExists(path)

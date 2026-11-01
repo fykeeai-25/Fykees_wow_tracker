@@ -69,6 +69,12 @@ GetTradeSkillItemLink = function(i)
 end
 GetTradeSkillNumMade = function() return 1, 1 end
 GetCraftDisplaySkillLine = function() return nil end
+GetNumCrafts = function() return 0 end
+GetCraftInfo = function() return nil end
+GetCraftNumReagents = function() return 0 end
+GetCraftReagentInfo = function() return nil end
+GetCraftReagentItemLink = function() return nil end
+GetCraftItemLink = function() return nil end
 
 local containers = {
   [0] = { { 2447, "Peacebloom", 4 }, { 2449, "Earthroot", 2 } },
