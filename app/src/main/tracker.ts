@@ -5,7 +5,7 @@ import type { AppState, LoadState, TrackerSnapshot } from '../shared/types'
 import { readConfig, writeConfig } from './config'
 import { accountDir, listAccounts, savedVariablesPath, validateGameDir } from './locator'
 import { parseSavedVariables } from './luaParser'
-import { normalize } from './normalizer'
+import { AddonNewerError, normalize } from './normalizer'
 
 export type WatchFn = (file: string, onChange: () => void) => () => void
 
@@ -76,7 +76,8 @@ export function createTracker(opts: TrackerOptions): Tracker {
       lastGood = { snapshot, fileUpdatedAt }
       return { status: 'ok', snapshot, fileUpdatedAt }
     } catch (e) {
-      if (lastGood) return { status: 'ok', ...lastGood, warning: STALE_FILE_WARNING }
+      const warning = e instanceof AddonNewerError ? e.message : STALE_FILE_WARNING
+      if (lastGood) return { status: 'ok', ...lastGood, warning }
       return { status: 'error', message: e instanceof Error ? e.message : String(e) }
     }
   }

@@ -18,7 +18,7 @@ describe('parseSavedVariables', () => {
 
   it('array-like tables become arrays', () => {
     const db = parseSavedVariables(fixture('AzerothTracker.lua')) as Any
-    const reagents = db.characters['Firemaw-Thrall'].professions.Alchemy.recipes['Minor Healing Potion'].reagents
+    const reagents = db.characters['Firemaw-Thrall'].professions.Alchemy.recipes['spell:2330'].reagents
     expect(Array.isArray(reagents)).toBe(true)
     expect(reagents).toHaveLength(2)
     expect(reagents[0]).toEqual({ itemId: 2447, count: 1 })

@@ -1,9 +1,9 @@
 -- AzerothTracker: collects character, profession and inventory data into
 -- AzerothTrackerDB (SavedVariables). The desktop app reads the file after
--- /reload, logout or character switch. Format: schemaVersion 1 (see docs/plans).
+-- /reload, logout or character switch. Format: schemaVersion 2 (see docs/specs).
 
 local ADDON_NAME = ...
-local SCHEMA_VERSION = 1
+local SCHEMA_VERSION = 2
 
 local db
 
@@ -102,9 +102,46 @@ local function storeRecipes(profName, rank, maxRank, recipes)
   -- Merge: collapsed categories or filters in the profession window hide
   -- recipes, so a scan only adds or updates, never removes.
   p.recipes = p.recipes or {}
-  for name, recipe in pairs(recipes) do p.recipes[name] = recipe end
+  for key, recipe in pairs(recipes) do p.recipes[key] = recipe end
   p.scannedAt = now()
   c.professions[profName] = p
+end
+
+local DIFFICULTY = { optimal = "orange", medium = "yellow", easy = "green", trivial = "gray" }
+
+local function spellIdFromLink(link)
+  if not link then return nil end
+  local id = string.match(link, "enchant:(%d+)") or string.match(link, "spell:(%d+)")
+  return id and tonumber(id) or nil
+end
+
+-- Builds one recipe entry through the given API accessors. Returns nil when a
+-- reagent's item link is not available yet (item not cached): the previous
+-- entry is then kept and the next update retries.
+local function readRecipe(api, i, name, kind)
+  local reagents = {}
+  for r = 1, (api.numReagents(i) or 0) do
+    local _, _, count = api.reagentInfo(i, r)
+    local link = api.reagentLink and api.reagentLink(i, r)
+    local id = itemIdFromLink(link)
+    if not id then return nil end
+    rememberName(id, link)
+    reagents[#reagents + 1] = { itemId = id, count = count or 1 }
+  end
+  local entry = { name = name, difficulty = DIFFICULTY[kind], reagents = reagents }
+  entry.spellId = api.recipeLink and spellIdFromLink(api.recipeLink(i)) or nil
+  local itemLink = api.itemLink and api.itemLink(i)
+  local createdId = itemIdFromLink(itemLink)
+  if createdId then
+    entry.createdItemId = createdId
+    rememberName(createdId, itemLink)
+  end
+  if api.numMade then entry.numMade = api.numMade(i) end
+  return entry
+end
+
+local function recipeKey(entry)
+  return entry.spellId and ("spell:" .. entry.spellId) or entry.name
 end
 
 -- Regular professions (TradeSkill API). Collapsed categories / filters only
@@ -113,21 +150,20 @@ local function scanTradeSkill()
   if not GetTradeSkillLine or not GetNumTradeSkills then return end
   local profName, rank, maxRank = GetTradeSkillLine()
   if not profName or profName == "UNKNOWN" then return end
+  local api = {
+    numReagents = GetTradeSkillNumReagents,
+    reagentInfo = GetTradeSkillReagentInfo,
+    reagentLink = GetTradeSkillReagentItemLink,
+    recipeLink = GetTradeSkillRecipeLink,
+    itemLink = GetTradeSkillItemLink,
+    numMade = GetTradeSkillNumMade,
+  }
   local recipes = {}
   for i = 1, GetNumTradeSkills() do
     local name, kind = GetTradeSkillInfo(i)
     if name and kind ~= "header" and kind ~= "subheader" then
-      local reagents = {}
-      for r = 1, (GetTradeSkillNumReagents(i) or 0) do
-        local _, _, count = GetTradeSkillReagentInfo(i, r)
-        local link = GetTradeSkillReagentItemLink and GetTradeSkillReagentItemLink(i, r)
-        local id = itemIdFromLink(link)
-        if id then
-          rememberName(id, link)
-          reagents[#reagents + 1] = { itemId = id, count = count or 1 }
-        end
-      end
-      recipes[name] = { reagents = reagents }
+      local entry = readRecipe(api, i, name, kind)
+      if entry then recipes[recipeKey(entry)] = entry end
     end
   end
   storeRecipes(profName, rank, maxRank, recipes)
@@ -139,25 +175,39 @@ local function scanCraft()
   if not GetCraftDisplaySkillLine or not GetNumCrafts then return end
   local profName, rank, maxRank = GetCraftDisplaySkillLine()
   if not profName then return end
+  local api = {
+    numReagents = GetCraftNumReagents,
+    reagentInfo = GetCraftReagentInfo,
+    reagentLink = GetCraftReagentItemLink,
+    recipeLink = GetCraftRecipeLink or GetCraftItemLink,
+  }
   local recipes = {}
   for i = 1, GetNumCrafts() do
     local name, _, kind = GetCraftInfo(i)
     if name and kind ~= "header" then
-      local reagents = {}
-      for r = 1, (GetCraftNumReagents(i) or 0) do
-        local _, _, count = GetCraftReagentInfo(i, r)
-        local link = GetCraftReagentItemLink and GetCraftReagentItemLink(i, r)
-        local id = itemIdFromLink(link)
-        if id then
-          rememberName(id, link)
-          reagents[#reagents + 1] = { itemId = id, count = count or 1 }
-        end
-      end
-      recipes[name] = { reagents = reagents }
+      local entry = readRecipe(api, i, name, kind)
+      if entry then recipes[recipeKey(entry)] = entry end
     end
   end
   storeRecipes(profName, rank, maxRank, recipes)
 end
+
+-- Profession windows fire many update events (every craft, filter change);
+-- coalesce them into at most one scan per 0.5 s.
+local pendingScans = {}
+local function throttled(scan)
+  return function()
+    if pendingScans[scan] then return end
+    if not (C_Timer and C_Timer.After) then return scan() end
+    pendingScans[scan] = true
+    C_Timer.After(0.5, function()
+      pendingScans[scan] = nil
+      scan()
+    end)
+  end
+end
+local scanTradeSkillThrottled = throttled(scanTradeSkill)
+local scanCraftThrottled = throttled(scanCraft)
 
 -- ------------------------------------------------------------ inventory
 
@@ -262,10 +312,10 @@ local handlers = {
   end,
   PLAYER_LEVEL_UP = updateBasics,
   SKILL_LINES_CHANGED = updateProfessions,
-  TRADE_SKILL_SHOW = scanTradeSkill,
-  TRADE_SKILL_UPDATE = scanTradeSkill,
-  CRAFT_SHOW = scanCraft,
-  CRAFT_UPDATE = scanCraft,
+  TRADE_SKILL_SHOW = scanTradeSkillThrottled,
+  TRADE_SKILL_UPDATE = scanTradeSkillThrottled,
+  CRAFT_SHOW = scanCraftThrottled,
+  CRAFT_UPDATE = scanCraftThrottled,
   BAG_UPDATE = scheduleBagScan,
   BAG_UPDATE_DELAYED = scheduleBagScan,
   BANKFRAME_OPENED = function()

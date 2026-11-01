@@ -1,4 +1,4 @@
-import type { Character, Container, KnownRecipe, Profession, Reagent, TrackerSnapshot } from '../shared/types'
+import type { Character, Container, Difficulty, KnownRecipe, Profession, Reagent, TrackerSnapshot } from '../shared/types'
 
 type Obj = Record<string, unknown>
 
@@ -37,6 +37,17 @@ function reagents(v: unknown): Reagent[] {
     .map((r) => ({ itemId: r.itemId as number, count: r.count as number }))
 }
 
+const DIFFICULTIES: Difficulty[] = ['orange', 'yellow', 'green', 'gray']
+
+function knownRecipe(key: string, r: Obj): KnownRecipe {
+  const out: KnownRecipe = { name: str(r.name, key), reagents: reagents(r.reagents) }
+  if (typeof r.spellId === 'number') out.spellId = r.spellId
+  if (typeof r.createdItemId === 'number') out.createdItemId = r.createdItemId
+  if (typeof r.numMade === 'number') out.numMade = r.numMade
+  if (DIFFICULTIES.includes(r.difficulty as Difficulty)) out.difficulty = r.difficulty as Difficulty
+  return out
+}
+
 function profession(name: string, v: unknown): Profession | undefined {
   if (!isObj(v)) return undefined
   const p: Profession = { name, skill: num(v.skill), maxSkill: num(v.maxSkill) }
@@ -44,7 +55,7 @@ function profession(name: string, v: unknown): Profession | undefined {
   if (isObj(v.recipes)) {
     p.knownRecipes = Object.entries(v.recipes)
       .filter(([, r]) => isObj(r))
-      .map(([rname, r]): KnownRecipe => ({ name: rname, reagents: reagents((r as Obj).reagents) }))
+      .map(([key, r]) => knownRecipe(key, r as Obj))
       .sort((a, b) => a.name.localeCompare(b.name))
   }
   return p
@@ -86,8 +97,9 @@ export class AddonNewerError extends Error {
 /** Turns the parsed AzerothTrackerDB table into a TrackerSnapshot. Tolerant: bad fields are dropped. */
 export function normalize(raw: unknown): TrackerSnapshot {
   const db = isObj(raw) ? raw : {}
-  const version = num(db.schemaVersion, 1)
-  if (version !== 1) throw new Error(`Unsupported schemaVersion ${version}`)
+  const version = num(db.schemaVersion, SUPPORTED_SCHEMA)
+  if (version > SUPPORTED_SCHEMA) throw new AddonNewerError()
+  if (version < SUPPORTED_SCHEMA) throw new Error(`Unsupported schemaVersion ${version}`)
 
   const characters = isObj(db.characters)
     ? Object.keys(db.characters)
@@ -103,7 +115,7 @@ export function normalize(raw: unknown): TrackerSnapshot {
     }
   }
 
-  const snapshot: TrackerSnapshot = { schemaVersion: 1, characters, itemNames }
+  const snapshot: TrackerSnapshot = { schemaVersion: SUPPORTED_SCHEMA, characters, itemNames }
   const accountBank = container(db.accountBank)
   if (accountBank) snapshot.accountBank = accountBank
   return snapshot
