@@ -2,3 +2,7 @@
 node_modules/
 out/
 dist/
+.superpowers/
+app/node_modules/
+app/out/
+app/dist/

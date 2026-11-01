@@ -1,0 +1,10 @@
+appId: cz.azerothtracker.app
+productName: AzerothTracker
+directories:
+  output: dist
+files:
+  - out/**
+  - package.json
+win:
+  target: portable
+  artifactName: AzerothTracker-${version}.exe
