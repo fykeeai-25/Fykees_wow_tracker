@@ -112,7 +112,7 @@ describe.skipIf(!lua)('addon → app contract', () => {
   })
 
   it('reports a missing API in diagnostics', () => {
-    expect(run('no-currency-api').diagnostics!.missing).toEqual(['C_CurrencyInfo.GetCurrencyListSize'])
+    expect(run('no-currency-api').diagnostics!.missing).toEqual(['C_CurrencyInfo.GetCurrencyListSize', 'C_CurrencyInfo.GetCurrencyListInfo'])
   })
 
   it('writes no currencies when the client has no currency API', () => {
