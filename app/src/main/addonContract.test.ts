@@ -84,6 +84,12 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(mhp.reagents).toHaveLength(2)
   })
 
+  it('a recipe skipped for an uncached reagent is stored once the item info arrives', () => {
+    const alch = run('cache-arrives').characters[0].professions.find((p) => p.name === 'Alchemy')!
+    const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')
+    expect(mhp?.reagents).toHaveLength(2)
+  })
+
   it('collapsing a recipe category keeps the hidden recipes', () => {
     const alch = run('collapsed-recipes').characters[0].professions.find((p) => p.name === 'Alchemy')!
     expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])

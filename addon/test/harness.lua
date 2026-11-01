@@ -90,6 +90,7 @@ local function fire(event, ...)
 end
 local scenario = arg[2] or "default"
 if scenario == "global-mismatch" then TRADE_SKILLS = "Trade Skills" end
+if scenario == "cache-arrives" then uncachedReagent = true end
 
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
@@ -108,6 +109,10 @@ if scenario == "collapsed-professions" then
     { "Swords", false, false, 101, 120 },
   }
   fire("SKILL_LINES_CHANGED")
+elseif scenario == "cache-arrives" then
+  -- first open on a fresh client: one reagent not cached, then the item info arrives
+  uncachedReagent = false
+  fire("GET_ITEM_INFO_RECEIVED", 2449, true)
 elseif scenario == "uncached-reagent" then
   -- reopening the window while one reagent item is not cached by the client
   uncachedReagent = true

@@ -180,4 +180,17 @@ describe('tracker', () => {
     expect(s.demo).toBe(false)
     expect(s.account).toBe('ACC1')
   })
+
+  it('demo mode survives an app update that moves the demo folder', () => {
+    const root = tempDir()
+    const demo = fakeGame(root, ['DEMO'])
+    putSavedVariables(demo, 'DEMO', 'AzerothTracker.lua')
+    const configFile = join(root, 'config.json')
+    writeConfig(configFile, { gameDir: join(root, 'old-temp-folder-gone'), account: 'DEMO', demo: true })
+    const tracker = createTracker({ configFile, onState: () => {}, watch: () => () => {}, demoGameDir: demo })
+    tracker.start()
+    const s = ready(tracker.getState())
+    expect(s.demo).toBe(true)
+    expect(s.gameDir).toBe(demo)
+  })
 })

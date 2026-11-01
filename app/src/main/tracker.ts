@@ -13,6 +13,8 @@ export interface TrackerOptions {
   configFile: string
   onState: (s: AppState) => void
   watch?: WatchFn
+  /** where the bundled demo game folder lives in this build */
+  demoGameDir?: string
 }
 
 export interface Tracker {
