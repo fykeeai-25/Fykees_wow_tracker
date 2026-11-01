@@ -1,5 +1,5 @@
 import luaparse from 'luaparse'
-import type { Expression, TableConstructorExpression } from 'luaparse'
+import type { Chunk, Expression, TableConstructorExpression } from 'luaparse'
 
 export class LuaParseError extends Error {
   constructor(message: string) {
@@ -67,7 +67,7 @@ function tableToJs(table: TableConstructorExpression): unknown {
 
 /** Parses a WoW SavedVariables file and returns the value assigned to `varName` as plain JS. */
 export function parseSavedVariables(source: string, varName = 'AzerothTrackerDB'): unknown {
-  let chunk: ReturnType<typeof luaparse.parse>
+  let chunk: Chunk
   try {
     chunk = luaparse.parse(source, { luaVersion: '5.1', encodingMode: 'x-user-defined', comments: false })
   } catch (e) {

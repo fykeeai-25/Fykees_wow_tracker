@@ -20,6 +20,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
       - name: Test
+        if: success() || failure()
         run: npm test
       - name: Check addon
         run: npm run --if-present check:addon
