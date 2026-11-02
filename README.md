@@ -55,6 +55,8 @@ totals), **bubbles** in the middle (a quick summary each; click opens the full v
   Thrall bags 4 + Thrall bank 8 + account bank 20`. It does not show where an item drops or is
   sold in the game world – use Wowhead for that.
 
+**Install:** step-by-step guide in [`docs/INSTALL.md`](docs/INSTALL.md).
+
 ## Layout
 
 ```
