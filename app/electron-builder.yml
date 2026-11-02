@@ -9,5 +9,5 @@ extraResources:
   - from: resources
     to: .
 win:
-  target: portable
-  artifactName: AzerothTracker-${version}.exe
+  target: zip
+  artifactName: AzerothTracker-${version}-win-${arch}.${ext}

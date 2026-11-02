@@ -78,8 +78,9 @@ Tests run automatically in GitHub Actions on every push (dependencies are pinned
 
 ## Releases and previews
 
-- **App:** pushing a `v*` tag builds the Windows app (`AzerothTracker-<version>.exe`) and the
-  addon zip and publishes them as a GitHub Release. Every push to a `feat/**` branch builds the
+- **App:** pushing a `v*` tag builds the Windows app (`AzerothTracker-<version>-win-x64.zip` –
+  unzip and run `AzerothTracker.exe`, nothing is installed), the addon zip and `SHA256SUMS.txt`, and
+  publishes them as a GitHub Release whose notes list the SHA-256 checksums. Every push to a `feat/**` branch builds the
   same files as a downloadable **windows-preview** artifact on the Actions run page.
 - **Game data:** static data lives in `data/` (`items.json`, `professions/*.json`). Pushing a
   change to `main` validates it and publishes `data-pack.json` to the `data-latest` release. The

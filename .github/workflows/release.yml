@@ -35,6 +35,9 @@ jobs:
         run: |
           $name = if ('${{ inputs.tag }}' -ne '') { '${{ inputs.tag }}' } elseif ($env:GITHUB_REF_NAME -like 'v*') { $env:GITHUB_REF_NAME } else { 'dev' }
           Compress-Archive -Path addon/AzerothTracker -DestinationPath "app/dist/AzerothTracker-addon-$name.zip"
+      - name: Checksums and release notes
+        shell: bash
+        run: node scripts/release-notes.mjs dist dist/AzerothTracker-*-win-x64.zip dist/AzerothTracker-addon-*.zip
       - name: List build output
         shell: pwsh
         run: Get-ChildItem dist -File | Select-Object Name, Length
@@ -43,8 +46,9 @@ jobs:
         with:
           name: windows-preview
           path: |
-            app/dist/AzerothTracker-*.exe
+            app/dist/AzerothTracker-*-win-x64.zip
             app/dist/AzerothTracker-addon-*.zip
+            app/dist/SHA256SUMS.txt
           retention-days: 14
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != ''
@@ -53,14 +57,8 @@ jobs:
           tag_name: ${{ inputs.tag || github.ref_name }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
-          body: |
-            **AzerothTracker – companion app for World of Warcraft: Forever** (Windows).
-
-            - `AzerothTracker-*.exe` – the app (portable, no installer). Windows SmartScreen may warn because the app is not signed: *More info → Run anyway*. The first start takes a few seconds.
-            - `AzerothTracker-addon-*.zip` – the in-game addon. Unzip into `<game folder>\Interface\AddOns\`.
-
-            No game yet? On the first screen choose **Try with demo data**.
-            What it does and does not do: see the README. Pre-releases are test builds.
+          body_path: app/dist/release-notes.md
           files: |
-            app/dist/AzerothTracker-*.exe
+            app/dist/AzerothTracker-*-win-x64.zip
             app/dist/AzerothTracker-addon-*.zip
+            app/dist/SHA256SUMS.txt
