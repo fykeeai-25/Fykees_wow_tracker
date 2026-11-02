@@ -24,6 +24,7 @@ export function readWindowPrefs(file: string): WindowPrefs {
   try {
     const raw = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
     const prefs: WindowPrefs = { alwaysOnTop: raw.alwaysOnTop === true }
+    if (raw.maximized === true) prefs.maximized = true
     if (isBounds(raw.bounds)) prefs.bounds = raw.bounds
     return prefs
   } catch {

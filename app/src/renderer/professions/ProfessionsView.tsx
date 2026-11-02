@@ -69,6 +69,14 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
       <progress className="skill-bar" max={p.maxSkill || 1} value={p.skill} aria-hidden />
     </header>
   )
+  if (!game.pack) {
+    return (
+      <div className="profession">
+        {header}
+        <p className="hint">Loading game data…</p>
+      </div>
+    )
+  }
   if (!data && p.knownRecipes === undefined) return <div className="profession">{header}</div>
 
   const c = classifyRecipes(p, data ?? { profession: p.name, recipes: [] })

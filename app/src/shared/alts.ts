@@ -1,5 +1,5 @@
 import type { Container, TrackerSnapshot } from './types'
-import { itemName, itemSources, type MaterialSource } from './materials'
+import { itemSources, type MaterialSource } from './materials'
 
 export interface ItemHit {
   itemId: number
@@ -27,26 +27,28 @@ export function searchItems(
   now: number,
   limit = 50
 ): ItemHit[] {
+  return searchItemsWithTotal(query, snapshot, items, now, limit).hits
+}
+
+/** Like searchItems, plus how many items matched before the limit. Items without a known name are skipped. */
+export function searchItemsWithTotal(
+  query: string,
+  snapshot: TrackerSnapshot,
+  items: Record<string, string> | undefined,
+  now: number,
+  limit = 50
+): { hits: ItemHit[]; total: number } {
   const q = query.trim().toLowerCase()
-  if (q.length < 2) return []
+  if (q.length < 2) return { hits: [], total: 0 }
   const hits: ItemHit[] = []
   for (const id of ownedItemIds(snapshot)) {
-    const name = itemName(id, snapshot, items)
-    if (!name.toLowerCase().includes(q)) continue
+    const name = items?.[String(id)] ?? snapshot.itemNames[id]
+    if (!name || !name.toLowerCase().includes(q)) continue
     const sources = itemSources(id, snapshot, now)
     hits.push({ itemId: id, name, total: sources.reduce((n, s) => n + s.count, 0), sources })
   }
-  return hits.sort((a, b) => a.name.localeCompare(b.name)).slice(0, limit)
-}
-
-export function searchItemsWithTotal(
-  _query: string,
-  _snapshot: TrackerSnapshot,
-  _items: Record<string, string> | undefined,
-  _now: number,
-  _limit = 50
-): { hits: ItemHit[]; total: number } {
-  throw new Error('not implemented')
+  hits.sort((a, b) => a.name.localeCompare(b.name))
+  return { hits: hits.slice(0, limit), total: hits.length }
 }
 
 /** Currency names that at least one character has, sorted. */

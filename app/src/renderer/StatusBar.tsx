@@ -6,8 +6,8 @@ export function StatusBar({ load, now, data, demo }: { load: LoadState; now: num
   const bad = load.status === 'error' || (load.status === 'ok' && load.warning)
   const failed = data?.lastCheck && !data.lastCheck.ok
   return (
-    <div className={`status ${bad ? 'warn' : ''} ${isOld(load, now) ? 'old' : ''}`}>
-      <span>{`${demo ? 'Demo data · ' : ''}${statusText(load, now)}`}</span>
+    <div className={`status ${bad ? 'warn' : ''} ${!demo && isOld(load, now) ? 'old' : ''}`}>
+      <span className="status-text">{demo ? 'Demo data' : statusText(load, now)}</span>
       {data && (
         <span className="data-version" title={failed ? `Data update check failed: ${data.lastCheck!.error}` : undefined}>
           {`Data v${data.pack.manifest.dataVersion}`}

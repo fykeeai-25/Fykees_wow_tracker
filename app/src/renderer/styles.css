@@ -165,3 +165,9 @@ main { flex: 1; min-height: 0; overflow: auto; }
   .recipe .source { display: none; }
 }
 .ok-text { color: var(--ok); }
+
+.status-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.status { min-width: 0; }
+.search-box { position: relative; }
+.search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); font-size: 18px; padding: 0 6px; }
+.search-clear:hover { color: var(--text); }

@@ -21,6 +21,7 @@ export function App() {
   const searchInput = useRef<HTMLInputElement>(null)
   const searchToggle = useRef<HTMLButtonElement>(null)
   const searchOpenRef = useRef(false)
+  const searchColumn = useRef<HTMLElement>(null)
 
   // Focus the search field when the panel opens (narrow windows).
   useEffect(() => {
@@ -40,8 +41,22 @@ export function App() {
         searchToggle.current?.focus()
       }
     }
+    // Narrow-window search panel: close on a click outside it or when the window gets wide.
+    const onDown = (e: MouseEvent): void => {
+      if (!searchOpenRef.current) return
+      const t = e.target as Node
+      if (searchColumn.current?.contains(t) || searchToggle.current?.contains(t)) return
+      setSearchOpen(false)
+    }
+    const onResize = (): void => {
+      if (window.innerWidth > 1000) setSearchOpen(false)
+    }
     document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('resize', onResize)
     return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('resize', onResize)
       off()
       offData()
       clearInterval(timer)
@@ -102,7 +117,7 @@ export function App() {
                 <p className="hint">No characters yet – log in and type /reload.</p>
               )}
             </main>
-            <aside className="search-column" aria-label="Search">
+            <aside ref={searchColumn} className="search-column" aria-label="Search">
               <ItemSearch snapshot={snapshot} now={now} inputRef={searchInput} />
             </aside>
           </div>

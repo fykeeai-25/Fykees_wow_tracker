@@ -1,31 +1,40 @@
 import { useState, type Ref } from 'react'
 import type { TrackerSnapshot } from '../shared/types'
-import { searchItems } from '../shared/alts'
+import { searchItemsWithTotal } from '../shared/alts'
 import { wowheadItemUrl } from '../shared/wowhead'
 import { useGameData } from './DataContext'
 import { sourceLabel } from './professions/format'
 import { WowheadLink } from './professions/WowheadLink'
 
 /** "Where is my item?" – search across all characters' bags and banks. */
-export function ItemSearch({ snapshot, now, inputRef }: { snapshot: TrackerSnapshot; now: number; inputRef?: Ref<HTMLInputElement>; limit?: number }) {
+export function ItemSearch({ snapshot, now, inputRef, limit = 50 }: { snapshot: TrackerSnapshot; now: number; inputRef?: Ref<HTMLInputElement>; limit?: number }) {
   const [query, setQuery] = useState('')
   const game = useGameData()
-  const hits = searchItems(query, snapshot, game.items, now)
+  const { hits, total } = searchItemsWithTotal(query, snapshot, game.items, now, limit)
   const searching = query.trim().length >= 2
   return (
     <section className="item-search">
-      <input
-        ref={inputRef}
-        type="search"
-        className="search-input"
-        aria-label="Find item"
-        placeholder="Find item…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <div className="search-box">
+        {/* plain text field: type="search" would clear itself on Escape */}
+        <input
+          ref={inputRef}
+          type="text"
+          className="search-input"
+          aria-label="Find item"
+          placeholder="Find item…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {query && (
+          <button className="search-clear" aria-label="Clear search" onClick={() => setQuery('')}>
+            ×
+          </button>
+        )}
+      </div>
       {searching && (
         <div className="search-results" role="region" aria-label="Search results">
           {hits.length === 0 && <p className="muted">{`No item matching "${query.trim()}".`}</p>}
+          {total > hits.length && <p className="muted">{`Showing ${hits.length} of ${total} – type more to narrow it down.`}</p>}
           {hits.map((h) => (
             <div key={h.itemId} className="hit">
               <div className="hit-head">

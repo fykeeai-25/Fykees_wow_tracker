@@ -96,6 +96,13 @@ function character(key: string, v: Obj): Character {
 
 export const SUPPORTED_SCHEMA = 3
 
+export class AddonOlderError extends Error {
+  constructor() {
+    super('The addon is older than the app – install the addon that came with this version and /reload.')
+    this.name = 'AddonOlderError'
+  }
+}
+
 /** Shifts every timestamp so the newest one equals `now` (used for demo data). */
 export function rebaseTimes(snapshot: TrackerSnapshot, now: number): TrackerSnapshot {
   const s = structuredClone(snapshot)
@@ -144,7 +151,7 @@ export function normalize(raw: unknown): TrackerSnapshot {
   const db = isObj(raw) ? raw : {}
   const version = num(db.schemaVersion, SUPPORTED_SCHEMA)
   if (version > SUPPORTED_SCHEMA) throw new AddonNewerError()
-  if (version < SUPPORTED_SCHEMA) throw new Error(`Unsupported schemaVersion ${version}`)
+  if (version < SUPPORTED_SCHEMA) throw new AddonOlderError()
 
   const characters = isObj(db.characters)
     ? Object.keys(db.characters)

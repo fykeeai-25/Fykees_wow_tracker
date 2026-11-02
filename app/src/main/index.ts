@@ -50,8 +50,11 @@ function createWindow(): void {
     }
   })
   win.on('close', () => {
-    if (win) writeWindowPrefs(prefsFile, { bounds: win.getBounds(), alwaysOnTop: win.isAlwaysOnTop() })
+    if (win) {
+      writeWindowPrefs(prefsFile, { bounds: win.getNormalBounds(), alwaysOnTop: win.isAlwaysOnTop(), maximized: win.isMaximized() })
+    }
   })
+  if (prefs.maximized) win.maximize()
   win.on('closed', () => (win = undefined))
   if (process.env['ELECTRON_RENDERER_URL']) {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])

@@ -65,7 +65,7 @@ export function CharacterList({ snapshot, now, selectedKey, onSelect }: Characte
       </div>
       <div className="char-total" role="contentinfo" aria-label="Total">
         <span>Total</span>
-        <Money copper={sum.money} />
+        {snapshot.characters.some((c) => c.money !== undefined) ? <Money copper={sum.money} /> : <span>–</span>}
         {Object.entries(sum.currencies)
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([n, v]) => (
