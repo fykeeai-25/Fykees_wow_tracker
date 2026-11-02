@@ -41,3 +41,10 @@ lacks, and any Legacy-related API names it found. The same information appears i
 - [ ] Enchanting (Craft API) is saved like the other professions.
 - [ ] If Forever has an account bank, `accountBank` appears.
 - [ ] The app shows the data and refreshes by itself after the next `/reload`.
+
+## AzerothTrackerProbe (research only)
+
+A separate, temporary addon that logs which dungeon-run events the Forever client fires
+(instance enter/leave, encounters, deaths, XP, gold, your own loot). Input for the Run
+history module. How to use it: `docs/forever-api-research.md`. Never the combat log, never
+other players.

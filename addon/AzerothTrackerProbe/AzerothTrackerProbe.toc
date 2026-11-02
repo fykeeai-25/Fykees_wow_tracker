@@ -1,0 +1,7 @@
+## Interface: 16001, 120105, 11507
+## Title: AzerothTracker Probe
+## Notes: Research only: logs which dungeon-run events the client fires. Your own character only, no combat log.
+## Version: 0.1.0
+## SavedVariables: AzerothTrackerProbeDB
+
+AzerothTrackerProbe.lua

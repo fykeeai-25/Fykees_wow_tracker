@@ -4,14 +4,23 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import luaparse from 'luaparse'
 
-const addonDir = join(dirname(fileURLToPath(import.meta.url)), '../../addon/AzerothTracker')
-const toc = readFileSync(join(addonDir, 'AzerothTracker.toc'), 'utf8')
+const addonsDir = join(dirname(fileURLToPath(import.meta.url)), '../../addon')
 const fail = (msg) => {
   console.error(`check:addon FAILED: ${msg}`)
   process.exit(1)
 }
 
-for (const required of ['## Interface:', '## Title: AzerothTracker', '## SavedVariables: AzerothTrackerDB']) {
+// Each addon folder, its .toc title and the SavedVariables table it must write.
+const ADDONS = [
+  { folder: 'AzerothTracker', title: 'AzerothTracker', db: 'AzerothTrackerDB' },
+  { folder: 'AzerothTrackerProbe', title: 'AzerothTracker Probe', db: 'AzerothTrackerProbeDB' }
+]
+
+for (const { folder, title, db } of ADDONS) {
+const addonDir = join(addonsDir, folder)
+const toc = readFileSync(join(addonDir, `${folder}.toc`), 'utf8')
+
+for (const required of ['## Interface:', `## Title: ${title}\n`, `## SavedVariables: ${db}\n`]) {
   if (!toc.includes(required)) fail(`.toc is missing "${required}"`)
 }
 const files = toc.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
@@ -25,6 +34,8 @@ for (const f of files) {
   } catch (e) {
     fail(`${f}: ${e.message}`)
   }
-  if (!/AzerothTrackerDB/.test(src)) fail(`${f} never touches AzerothTrackerDB`)
+  if (!src.includes(db)) fail(`${f} never touches ${db}`)
+  if (/COMBAT_LOG_EVENT|CombatLogGetCurrentEventInfo/.test(src)) fail(`${f} uses the combat log`)
 }
-console.log(`check:addon OK (${files.join(', ')})`)
+console.log(`check:addon OK (${folder}: ${files.join(', ')})`)
+}
