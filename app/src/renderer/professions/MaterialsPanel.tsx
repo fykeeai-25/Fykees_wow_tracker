@@ -27,6 +27,18 @@ export function MaterialsPanel({ recipeName, reagents, snapshot, items, now }: M
           Craft ×
           <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
         </label>
+        {rows.length > 0 && (
+          <button
+            type="button"
+            className="max-qty"
+            disabled={craft.count === 0}
+            aria-label={`Set to the most you can craft (${craft.count})`}
+            title={craft.count > 0 ? `Set to the most you can craft (${craft.count})` : 'Not enough materials'}
+            onClick={() => setQty(craft.count)}
+          >
+            Max
+          </button>
+        )}
       </header>
       {rows.length === 0 ? (
         <p className="muted">This recipe needs no materials.</p>

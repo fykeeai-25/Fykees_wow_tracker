@@ -76,6 +76,10 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .materials header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .materials h3 { margin: 0; font-size: 15px; }
 .materials input { width: 64px; margin-left: 6px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 3px 6px; }
+.materials header label { margin-left: auto; }
+.max-qty { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
+
+.max-qty:disabled { opacity: 0.4; cursor: default; }
 .material { margin-top: 12px; }
 .craftable { font-weight: 600; margin: 12px 0 4px; }
 .craftable.yes { color: var(--ok); }
