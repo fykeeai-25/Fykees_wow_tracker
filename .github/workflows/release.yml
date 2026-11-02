@@ -45,6 +45,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: |
+            **AzerothTracker – companion app for World of Warcraft: Forever** (Windows).
+
+            - `AzerothTracker-*.exe` – the app (portable, no installer). Windows SmartScreen may warn because the app is not signed: *More info → Run anyway*. The first start takes a few seconds.
+            - `AzerothTracker-addon-*.zip` – the in-game addon. Unzip into `<game folder>\Interface\AddOns\`.
+
+            No game yet? On the first screen choose **Try with demo data**.
+            What it does and does not do: see the README. Pre-releases are test builds.
           files: |
             app/dist/AzerothTracker-*.exe
             app/dist/AzerothTracker-addon-*.zip
