@@ -84,6 +84,22 @@ describe('ProfessionsView', () => {
     expect(screen.getByText('Need 5 · Have 3')).toBeTruthy()
   })
 
+  it('Max sets the quantity to the most you can craft', () => {
+    openThrall('Alchemy')
+    fireEvent.click(screen.getByText('Minor Healing Potion'))
+    const max = Number(/Can craft (\d+)×/.exec(screen.getByText(/^Can craft \d+×/).textContent!)![1])
+    expect(max).toBeGreaterThan(1)
+    fireEvent.click(screen.getByRole('button', { name: `Set to the most you can craft (${max})` }))
+    expect((screen.getByLabelText('Craft ×') as HTMLInputElement).value).toBe(String(max))
+    expect(document.querySelectorAll('.material.missing').length).toBe(0)
+  })
+
+  it('Max is disabled when nothing can be crafted', () => {
+    openThrall('Alchemy')
+    fireEvent.click(screen.getByText('Elixir of Wisdom'))
+    expect((screen.getByRole('button', { name: /Set to the most you can craft/ }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('cannot craft → names the missing reagent', () => {
     openThrall('Alchemy')
     fireEvent.click(screen.getByText('Elixir of Wisdom'))
