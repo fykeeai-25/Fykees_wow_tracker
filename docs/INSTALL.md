@@ -5,7 +5,7 @@ the folder you unzip it to.
 
 ## 1. Download
 
-From the [Releases](../../releases) page, take the newest release and download:
+From the [Releases](https://github.com/fykeeai-25/Fykees_wow_tracker/releases) page, take the newest release and download:
 
 | File | What it is |
 |---|---|
