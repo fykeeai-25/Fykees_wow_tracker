@@ -117,4 +117,10 @@ describe('ProfessionsView', () => {
     expect(screen.getByText('This character has no professions yet.')).toBeTruthy()
   })
 
+  it('waits for game data instead of flashing "not in database"', () => {
+    const s = fixtureSnapshot()
+    render(<ProfessionsDetail character={s.characters[1]} snapshot={s} now={FIXTURE_NOW} />)
+    expect(screen.getByText('Loading game data…')).toBeTruthy()
+    expect(screen.queryByRole('region', { name: 'Known, not in database' })).toBeNull()
+  })
 })

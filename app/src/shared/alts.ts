@@ -39,6 +39,16 @@ export function searchItems(
   return hits.sort((a, b) => a.name.localeCompare(b.name)).slice(0, limit)
 }
 
+export function searchItemsWithTotal(
+  _query: string,
+  _snapshot: TrackerSnapshot,
+  _items: Record<string, string> | undefined,
+  _now: number,
+  _limit = 50
+): { hits: ItemHit[]; total: number } {
+  throw new Error('not implemented')
+}
+
 /** Currency names that at least one character has, sorted. */
 export function currencyColumns(snapshot: TrackerSnapshot): string[] {
   const names = new Set<string>()

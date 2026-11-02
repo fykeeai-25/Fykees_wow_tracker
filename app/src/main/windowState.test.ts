@@ -35,4 +35,10 @@ describe('window prefs', () => {
     expect(visibleBounds({ x: 3790, y: 0, width: 700, height: 900 }, displays)).toBeUndefined()
     expect(visibleBounds(undefined, displays)).toBeUndefined()
   })
+
+  it('remembers a maximized window', () => {
+    const f = join(tempDir(), 'window.json')
+    writeWindowPrefs(f, { bounds: { x: 0, y: 0, width: 900, height: 700 }, alwaysOnTop: false, maximized: true })
+    expect(readWindowPrefs(f).maximized).toBe(true)
+  })
 })

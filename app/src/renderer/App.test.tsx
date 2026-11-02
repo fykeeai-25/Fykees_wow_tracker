@@ -72,6 +72,20 @@ describe('App dashboard layout', () => {
     expect(document.activeElement).toBe(toggle)
   })
 
+  it('clicking outside or widening the window closes the search panel', async () => {
+    render(<App />)
+    const toggle = await screen.findByRole('button', { name: 'Toggle search' })
+    fireEvent.click(toggle)
+    fireEvent.mouseDown(document.body)
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(toggle)
+    fireEvent.mouseDown(screen.getByLabelText('Find item'))
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1400 })
+    act(() => void window.dispatchEvent(new Event('resize')))
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+  })
+
   it('top bar shows status and data version; search toggle flips aria-expanded', async () => {
     render(<App />)
     const toggle = await screen.findByRole('button', { name: 'Toggle search' })

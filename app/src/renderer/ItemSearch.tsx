@@ -7,7 +7,7 @@ import { sourceLabel } from './professions/format'
 import { WowheadLink } from './professions/WowheadLink'
 
 /** "Where is my item?" – search across all characters' bags and banks. */
-export function ItemSearch({ snapshot, now, inputRef }: { snapshot: TrackerSnapshot; now: number; inputRef?: Ref<HTMLInputElement> }) {
+export function ItemSearch({ snapshot, now, inputRef }: { snapshot: TrackerSnapshot; now: number; inputRef?: Ref<HTMLInputElement>; limit?: number }) {
   const [query, setQuery] = useState('')
   const game = useGameData()
   const hits = searchItems(query, snapshot, game.items, now)

@@ -44,4 +44,13 @@ describe('CharacterList', () => {
     expect(screen.getByRole('button', { name: /Brakk/ }).textContent).toContain('Lv 24seen')
     expect(screen.getByRole('contentinfo', { name: 'Total' }).textContent).toContain('12g 34s 56c')
   })
+
+  it('total shows – when no character has gold data', () => {
+    const s = fixtureSnapshot()
+    for (const c of s.characters) c.money = undefined
+    render(<CharacterList snapshot={s} now={FIXTURE_NOW} onSelect={vi.fn()} />)
+    const total = screen.getByRole('contentinfo', { name: 'Total' })
+    expect(total.textContent).toContain('–')
+    expect(total.textContent).not.toContain('0c')
+  })
 })

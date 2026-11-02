@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, fireEvent, within, cleanup } from '@testing-library/react'
+import { ItemSearch as Search } from './ItemSearch'
 import type { ReactElement } from 'react'
 import { ItemSearch } from './ItemSearch'
 import { DataProvider } from './DataContext'
@@ -30,3 +31,20 @@ describe('ItemSearch', () => {
   })
 })
 
+
+describe('ItemSearch polish', () => {
+  it('Escape does not wipe the query (plain text field) and Clear search empties it', () => {
+    render(withData(<Search snapshot={fixtureSnapshot()} now={FIXTURE_NOW} />))
+    const input = screen.getByLabelText('Find item') as HTMLInputElement
+    expect(input.type).toBe('text')
+    fireEvent.change(input, { target: { value: 'bloom' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
+    expect(input.value).toBe('')
+  })
+
+  it('says when results are capped', () => {
+    render(withData(<Search snapshot={fixtureSnapshot()} now={FIXTURE_NOW} limit={1} />))
+    fireEvent.change(screen.getByLabelText('Find item'), { target: { value: 'oo' } })
+    expect(screen.getByText('Showing 1 of 2 – type more to narrow it down.')).toBeTruthy()
+  })
+})

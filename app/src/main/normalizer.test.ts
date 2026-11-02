@@ -117,7 +117,7 @@ describe('normalize', () => {
   })
 
   it('rejects old schemaVersion', () => {
-    expect(() => normalize({ schemaVersion: 2 })).toThrow('Unsupported schemaVersion 2')
+    expect(() => normalize({ schemaVersion: 2 })).toThrow('The addon is older than the app – install the addon that came with this version and /reload.')
   })
 
   it('rebaseTimes shifts every timestamp so the newest equals now', () => {

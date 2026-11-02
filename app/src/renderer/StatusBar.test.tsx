@@ -36,9 +36,10 @@ describe('StatusBar age', () => {
 })
 
 describe('StatusBar demo', () => {
-  it('prefixes demo data', () => {
-    const load = { status: 'ok' as const, snapshot: { schemaVersion: 2, characters: [], itemNames: {} }, fileUpdatedAt: 1000 }
-    render(<StatusBar load={load} now={1060} demo />)
-    expect(screen.getByText('Demo data · Updated ' + new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(1000 * 1000)) + ' · 1 min ago')).toBeTruthy()
+  it('demo shows just "Demo data" and never turns amber', () => {
+    const load = { status: 'ok' as const, snapshot: { schemaVersion: 3, characters: [], itemNames: {} }, fileUpdatedAt: 1000 }
+    const { container } = render(<StatusBar load={load} now={1000 + 7200} demo />)
+    expect(container.querySelector('.status')!.className).not.toContain('old')
+    expect(screen.getByText('Demo data')).toBeTruthy()
   })
 })

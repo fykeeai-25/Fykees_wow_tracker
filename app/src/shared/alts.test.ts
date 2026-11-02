@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { currencyColumns, searchItems, totals } from './alts'
+import { currencyColumns, searchItems, searchItemsWithTotal, totals } from './alts'
 import { fixtureSnapshot, sampleItems, FIXTURE_NOW } from '../../test/snapshot'
 
 describe('searchItems', () => {
@@ -51,5 +51,19 @@ describe('alts totals', () => {
     const s = fixtureSnapshot()
     s.characters.push({ ...s.characters[0], key: 'R-NoMoney', name: 'NoMoney', money: undefined, currencies: undefined })
     expect(totals(s)).toEqual({ money: 128456, currencies: { "Merchant's Favor": 7 } })
+  })
+})
+
+describe('search polish', () => {
+  it('reports the total before the limit', () => {
+    const r = searchItemsWithTotal('oo', fixtureSnapshot(), sampleItems, FIXTURE_NOW, 1)
+    expect(r.total).toBe(2)
+    expect(r.hits.map((h) => h.name)).toEqual(['Earthroot'])
+  })
+
+  it('never matches placeholder names of unknown items', () => {
+    const s = fixtureSnapshot()
+    s.characters[0].bags!.items[99999] = 1
+    expect(searchItems('item', s, sampleItems, FIXTURE_NOW)).toEqual([])
   })
 })

@@ -11,6 +11,7 @@ export interface Bounds {
 export interface WindowPrefs {
   bounds?: Bounds
   alwaysOnTop: boolean
+  maximized?: boolean
 }
 
 const isBounds = (b: unknown): b is Bounds =>
