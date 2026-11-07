@@ -152,11 +152,11 @@ end
 local scenario = arg[2] or "default"
 if scenario == "global-mismatch" then TRADE_SKILLS = "Trade Skills" end
 if scenario == "cache-arrives" then uncachedReagent = true end
+if scenario == "modern-linked" then linkedTradeSkill = true end
 
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
 fire("TRADE_SKILL_SHOW")
-if scenario == "modern-linked" then linkedTradeSkill = true end
 if string.sub(scenario, 1, 6) == "modern" then fire("TRADE_SKILL_LIST_UPDATE") end
 fire("BANKFRAME_OPENED")
 fire("BAG_UPDATE", 0)

@@ -279,8 +279,37 @@ end
 -- Professions and their skill from the skill panel (primary + secondary).
 -- Rows under a collapsed header are invisible, so a profession is only removed
 -- when every header is expanded and it is really gone (e.g. unlearned).
+-- Modern clients (WoW: Forever 1.60) have no skill panel API; GetProfessions
+-- returns the indices of up to six professions (holes are nil).
+local function updateModernProfessions()
+  if not GetProfessions or not GetProfessionInfo then return end
+  local idx = { GetProfessions() }
+  local c = getChar()
+  local seen, any = {}, false
+  for i = 1, 6 do
+    if type(idx[i]) == "number" then
+      local name, _, rank, maxRank = GetProfessionInfo(idx[i])
+      if name and name ~= "" then
+        local p = c.professions[name] or {}
+        p.skill = rank or 0
+        p.maxSkill = maxRank or 0
+        c.professions[name] = p
+        seen[name] = true
+        any = true
+      end
+    end
+  end
+  -- An empty answer may just mean "not loaded yet": never wipe on it.
+  if any then
+    for name in pairs(c.professions) do
+      if not seen[name] then c.professions[name] = nil end
+    end
+  end
+  c.updatedAt = now()
+end
+
 local function updateProfessions()
-  if not GetNumSkillLines or not GetSkillLineInfo then return end
+  if not GetNumSkillLines or not GetSkillLineInfo then return updateModernProfessions() end
   local wanted = {}
   if TRADE_SKILLS then wanted[stripColon(TRADE_SKILLS)] = true end
   if SECONDARY_SKILLS then wanted[stripColon(SECONDARY_SKILLS)] = true end
@@ -358,10 +387,70 @@ local function recipeKey(entry)
   return entry.spellId and ("spell:" .. entry.spellId) or entry.name
 end
 
+local function rememberNameById(id)
+  if db.itemNames[id] then return end
+  local name = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
+  if not name and GetItemInfo then name = GetItemInfo(id) end
+  if name and name ~= "" then db.itemNames[id] = name end
+end
+
+-- relativeDifficulty of the modern recipe API: 0 optimal … 3 trivial
+local MODERN_DIFFICULTY = { [0] = "orange", [1] = "yellow", [2] = "green", [3] = "gray" }
+
+local function readModernRecipe(T, id, info)
+  local entry = { name = info.name, spellId = id, difficulty = MODERN_DIFFICULTY[info.relativeDifficulty], reagents = {} }
+  local schematic = T.GetRecipeSchematic and T.GetRecipeSchematic(id, false)
+  if type(schematic) == "table" then
+    local basic = Enum and Enum.CraftingReagentType and Enum.CraftingReagentType.Basic or 1
+    for _, slot in ipairs(schematic.reagentSlotSchematics or {}) do
+      -- only the required base reagents are the recipe's cost; optional and
+      -- finishing reagents are choices, not requirements
+      local isBasic = slot.reagentType == nil or slot.reagentType == basic
+      local reagent = slot.reagents and slot.reagents[1]
+      if isBasic and slot.required ~= false and reagent and reagent.itemID then
+        entry.reagents[#entry.reagents + 1] = { itemId = reagent.itemID, count = slot.quantityRequired or 1 }
+        rememberNameById(reagent.itemID)
+      end
+    end
+    if schematic.outputItemID and schematic.outputItemID > 0 then
+      entry.createdItemId = schematic.outputItemID
+      rememberNameById(schematic.outputItemID)
+    end
+    if schematic.quantityMin then entry.numMade = schematic.quantityMin end
+  end
+  return entry
+end
+
+-- Modern profession window (C_TradeSkillUI). Only the player's own window:
+-- linked, guild and NPC crafting windows show other people's recipes.
+local function scanModernTradeSkill()
+  local T = C_TradeSkillUI
+  if not (T and T.GetAllRecipeIDs and T.GetRecipeInfo and T.GetBaseProfessionInfo) then return end
+  if T.IsTradeSkillReady and not T.IsTradeSkillReady() then return end
+  if (T.IsTradeSkillLinked and T.IsTradeSkillLinked())
+    or (T.IsTradeSkillGuild and T.IsTradeSkillGuild())
+    or (T.IsNPCCrafting and T.IsNPCCrafting()) then return end
+  local base = T.GetBaseProfessionInfo()
+  local profName = type(base) == "table" and base.professionName
+  if not profName or profName == "" then return end
+  local rank = base.skillLevel
+  local maxRank = base.maxSkillLevel
+  if not rank or rank == 0 then rank, maxRank = nil, nil end -- keep the GetProfessions value
+  local recipes = {}
+  for _, id in ipairs(T.GetAllRecipeIDs() or {}) do
+    local info = T.GetRecipeInfo(id)
+    if type(info) == "table" and info.learned and info.name then
+      local entry = readModernRecipe(T, id, info)
+      recipes[recipeKey(entry)] = entry
+    end
+  end
+  if next(recipes) then storeRecipes(profName, rank, maxRank, recipes) end
+end
+
 -- Regular professions (TradeSkill API). Collapsed categories / filters only
 -- limit what one scan sees; storeRecipes merges, so nothing is lost.
 local function scanTradeSkill()
-  if not GetTradeSkillLine or not GetNumTradeSkills then return end
+  if not GetTradeSkillLine or not GetNumTradeSkills then return scanModernTradeSkill() end
   local profName, rank, maxRank = GetTradeSkillLine()
   if not profName or profName == "UNKNOWN" then return end
   local api = {
@@ -546,6 +635,15 @@ local handlers = {
     scanTradeSkillThrottled()
   end,
   TRADE_SKILL_UPDATE = scanTradeSkillThrottled,
+  -- modern clients: the recipe list is ready only after these
+  TRADE_SKILL_LIST_UPDATE = function()
+    tradeOpen = true
+    scanTradeSkillThrottled()
+  end,
+  TRADE_SKILL_DATA_SOURCE_CHANGED = function()
+    tradeOpen = true
+    scanTradeSkillThrottled()
+  end,
   TRADE_SKILL_CLOSE = function() tradeOpen = false end,
   CRAFT_SHOW = function()
     craftOpen = true
@@ -601,6 +699,8 @@ local function printDiagnostics()
 end
 
 SlashCmdList["AZEROTHTRACKER"] = function(msg)
+  -- also reads an open profession window, in case its events were missed
+  pcall(scanTradeSkill)
   if msg and string.lower(msg) == "debug" then return printDiagnostics() end
   local chars, profs, recipes = 0, 0, 0
   for _, c in pairs(db.characters) do
