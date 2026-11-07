@@ -145,6 +145,137 @@ local function updateDiagnostics()
   }
 end
 
+-- ---------------------------------------------------------------- API probe
+-- Discovery for clients whose profession API differs from Classic (WoW: Forever
+-- 1.60 has none of the GetTradeSkill*/GetCraft*/GetSkillLine* functions).
+-- Saved to AzerothTrackerDB.probe for reading by hand; the app ignores it.
+-- Everything runs under pcall so the probe can never break data collection.
+
+local PROBE_PATTERNS = { "TradeSkill", "Profession", "SkillLine", "Craft", "Recipe" }
+local PROBE_NAMESPACES = { C_SpellBook = true, C_Spell = true, C_Item = true }
+local PROBE_EVENTS = {
+  "TRADE_SKILL_SHOW", "TRADE_SKILL_CLOSE", "TRADE_SKILL_UPDATE", "TRADE_SKILL_LIST_UPDATE",
+  "TRADE_SKILL_DATA_SOURCE_CHANGING", "TRADE_SKILL_DATA_SOURCE_CHANGED", "TRADE_SKILL_NAME_UPDATE",
+  "CRAFT_SHOW", "CRAFT_UPDATE", "SKILL_LINES_CHANGED", "SKILL_LINE_SPECS_RANKS_CHANGED",
+  "NEW_RECIPE_LEARNED", "LEARNED_SPELL_IN_TAB", "SPELLS_CHANGED",
+}
+local PROBE_LIST_MAX = 400
+
+local function probeMatches(name)
+  for _, pat in ipairs(PROBE_PATTERNS) do
+    if string.find(name, pat, 1, true) then return true end
+  end
+  return false
+end
+
+-- Plain copy of a value that SavedVariables can hold: bounded depth and size.
+local function summarize(v, depth)
+  local t = type(v)
+  if t == "string" or t == "number" or t == "boolean" then return v end
+  if t ~= "table" then return t end
+  if depth >= 3 then return "table" end
+  local out, n = {}, 0
+  for k, x in pairs(v) do
+    if type(k) == "string" or type(k) == "number" then
+      out[k] = summarize(x, depth + 1)
+      n = n + 1
+      if n >= 40 then out["..."] = "truncated" break end
+    end
+  end
+  return out
+end
+
+-- Results of fn(...) as a list; a missing value is the string "nil" so positions are kept.
+local function probeCall(calls, label, fn, ...)
+  if type(fn) ~= "function" then return nil end
+  local res = { pcall(fn, ...) }
+  if not res[1] then
+    calls[label] = { "error: " .. tostring(res[2]) }
+    return nil
+  end
+  local out, last = {}, 1
+  for i = 2, table.maxn(res) do last = i end
+  for i = 2, last do
+    if res[i] == nil then out[i - 1] = "nil" else out[i - 1] = summarize(res[i], 0) end
+  end
+  calls[label] = out
+  return unpack(res, 2, last)
+end
+
+local function probeApi(label)
+  local p = db.probe
+  local calls = {}
+  local function call(name, fn, ...) return probeCall(calls, name, fn, ...) end
+
+  local idx = { call("GetProfessions()", GetProfessions) }
+  for i = 1, 5 do
+    if type(idx[i]) == "number" then call("GetProfessionInfo(" .. idx[i] .. ")", GetProfessionInfo, idx[i]) end
+  end
+  local T = C_TradeSkillUI
+  if type(T) == "table" then
+    call("C_TradeSkillUI.IsTradeSkillReady()", T.IsTradeSkillReady)
+    call("C_TradeSkillUI.GetTradeSkillLine()", T.GetTradeSkillLine)
+    call("C_TradeSkillUI.GetBaseProfessionInfo()", T.GetBaseProfessionInfo)
+    call("C_TradeSkillUI.GetChildProfessionInfo()", T.GetChildProfessionInfo)
+    call("C_TradeSkillUI.GetCategories()", T.GetCategories)
+    local ids = call("C_TradeSkillUI.GetAllRecipeIDs()", T.GetAllRecipeIDs)
+    local first = type(ids) == "table" and ids[1] or nil
+    if first then
+      local a = "(" .. tostring(first) .. ")"
+      call("C_TradeSkillUI.GetRecipeInfo" .. a, T.GetRecipeInfo, first)
+      call("C_TradeSkillUI.GetRecipeSchematic" .. a, T.GetRecipeSchematic, first, false)
+      call("C_TradeSkillUI.GetRecipeNumReagents" .. a, T.GetRecipeNumReagents, first)
+      call("C_TradeSkillUI.GetRecipeReagentInfo" .. a, T.GetRecipeReagentInfo, first, 1)
+      call("C_TradeSkillUI.GetRecipeReagentItemLink" .. a, T.GetRecipeReagentItemLink, first, 1)
+      call("C_TradeSkillUI.GetRecipeItemLink" .. a, T.GetRecipeItemLink, first)
+      call("C_TradeSkillUI.GetRecipeLink" .. a, T.GetRecipeLink, first)
+      call("C_TradeSkillUI.GetRecipeNumItemsProduced" .. a, T.GetRecipeNumItemsProduced, first)
+    end
+  end
+  p.calls[label] = calls
+end
+
+local function probeGlobals()
+  local p = db.probe
+  local globals, namespaces = {}, {}
+  for name, v in pairs(_G) do
+    if type(name) == "string" and (type(v) == "function" or type(v) == "table") then
+      local isNs = type(v) == "table" and string.sub(name, 1, 2) == "C_"
+      if probeMatches(name) or (isNs and PROBE_NAMESPACES[name]) then
+        if #globals < PROBE_LIST_MAX then globals[#globals + 1] = name end
+        if isNs then
+          local fns = {}
+          for k, f in pairs(v) do
+            if type(k) == "string" and type(f) == "function" then fns[#fns + 1] = k end
+          end
+          table.sort(fns)
+          namespaces[name] = fns
+        end
+      end
+    end
+  end
+  table.sort(globals)
+  p.globals, p.namespaces = globals, namespaces
+end
+
+local function runProbe(label)
+  db.probe = db.probe or {}
+  local p = db.probe
+  p.events = p.events or {}
+  p.calls = p.calls or {}
+  p.checkedAt = now()
+  pcall(probeGlobals)
+  pcall(probeApi, label)
+end
+
+local function probeEvent(event)
+  if not db then return end
+  db.probe = db.probe or {}
+  db.probe.events = db.probe.events or {}
+  db.probe.events[event] = (db.probe.events[event] or 0) + 1
+  runProbe(event)
+end
+
 -- Professions and their skill from the skill panel (primary + secondary).
 -- Rows under a collapsed header are invisible, so a profession is only removed
 -- when every header is expanded and it is really gone (e.g. unlearned).
@@ -398,6 +529,8 @@ local handlers = {
   end,
   PLAYER_LOGIN = function()
     updateDiagnostics()
+    db.probe = nil -- fresh probe each session
+    runProbe("PLAYER_LOGIN")
     updateBasics()
     updateProfessions()
     updateMoney()
@@ -437,16 +570,21 @@ local handlers = {
   end,
 }
 
+local probeEvents = {}
+for _, e in ipairs(PROBE_EVENTS) do probeEvents[e] = true end
+
 frame:SetScript("OnEvent", function(_, event, ...)
   if not db and event ~= "ADDON_LOADED" then return end
   local handler = handlers[event]
   if handler then handler(...) end
+  if probeEvents[event] then pcall(probeEvent, event) end
 end)
 
 for event in pairs(handlers) do
   -- Some events may not exist in every client; ignore those.
   pcall(frame.RegisterEvent, frame, event)
 end
+for event in pairs(probeEvents) do pcall(frame.RegisterEvent, frame, event) end
 
 -- ---------------------------------------------------------- slash command
 
@@ -454,10 +592,12 @@ SLASH_AZEROTHTRACKER1 = "/azeroth"
 SLASH_AZEROTHTRACKER2 = "/at"
 local function printDiagnostics()
   updateDiagnostics()
+  runProbe("debug")
   local d = db.diagnostics
   print(string.format("|cffe0b44cAzerothTracker|r %s – client %s (build %s, interface %s)", ADDON_VERSION, tostring(d.build), tostring(d.buildNumber), tostring(d.interface)))
   print("  Missing APIs: " .. (#d.missing > 0 and table.concat(d.missing, ", ") or "none"))
   print("  Legacy APIs: " .. (#d.legacyApis > 0 and table.concat(d.legacyApis, ", ") or "none found"))
+  print("  Profession API probe saved – open a profession window, then /reload and send the SavedVariables file.")
 end
 
 SlashCmdList["AZEROTHTRACKER"] = function(msg)
