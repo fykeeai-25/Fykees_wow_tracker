@@ -55,6 +55,9 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .skill { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
 .skill-bar { flex: 1; max-width: 240px; height: 6px; accent-color: var(--accent); }
 .profession-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; margin-top: 12px; }
+.profession-body.no-side { grid-template-columns: minmax(0, 1fr); }
+.side-slot:empty { display: none; }
+.side-slot .materials { position: static; margin-top: 12px; }
 .recipes ul, .materials ul { list-style: none; margin: 0; padding: 0; }
 .recipes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 16px 0 6px; }
 .recipe-row { display: flex; align-items: stretch; gap: 4px; margin-bottom: 4px; }

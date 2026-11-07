@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { Character, KnownRecipe, Profession, ProfessionData, StaticRecipe, TrackerSnapshot } from '../../shared/types'
 import { classifyRecipes, type Difficulty, type RecipeView } from '../../shared/professions'
 import { wowheadItemUrl, wowheadSpellUrl } from '../../shared/wowhead'
@@ -6,6 +7,7 @@ import { useGameData } from '../DataContext'
 import { MaterialsPanel } from './MaterialsPanel'
 import { sourceText } from './format'
 import { WowheadLink } from './WowheadLink'
+import { useSidePanel } from '../SidePanel'
 
 interface Selected {
   name: string
@@ -61,6 +63,8 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
   const { profession: p } = props
   const [selected, setSelected] = useState<Selected>()
   const game = useGameData()
+  // Wide layout: the materials go to the right column, under the item search.
+  const side = useSidePanel()
   const data: ProfessionData | undefined = game.professionData(p.name)
   const header = (
     <header className="profession-head">
@@ -81,10 +85,20 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
 
   const c = classifyRecipes(p, data ?? { profession: p.name, recipes: [] })
   const nextAt = c.availableNext[0]?.recipe.learnAt
+  const materials = selected && (
+    <MaterialsPanel
+      key={selected.name}
+      recipeName={selected.name}
+      reagents={selected.reagents}
+      snapshot={props.snapshot}
+      items={game.items}
+      now={props.now}
+    />
+  )
   return (
     <div className="profession">
       {header}
-      <div className="profession-body">
+      <div className={side ? 'profession-body no-side' : 'profession-body'}>
         <div className="recipe-columns">
           {c.scanned ? (
             <RecipeList title="Known" items={c.known} selected={selected?.name} onSelect={setSelected} />
@@ -120,17 +134,9 @@ function ProfessionDetail(props: { profession: Profession; snapshot: TrackerSnap
           )}
           <Legend />
         </div>
-        {selected && (
-          <MaterialsPanel
-            key={selected.name}
-            recipeName={selected.name}
-            reagents={selected.reagents}
-            snapshot={props.snapshot}
-            items={game.items}
-            now={props.now}
-          />
-        )}
+        {!side && materials}
       </div>
+      {side && materials && createPortal(materials, side)}
     </div>
   )
 }
