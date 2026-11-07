@@ -45,4 +45,12 @@ describe('Dashboard', () => {
     render(withData(<Dashboard character={s.characters[0]} snapshot={s} now={FIXTURE_NOW} />))
     expect(screen.getByRole('button', { name: /Professions/ }).textContent).toContain('No professions yet.')
   })
+  it('shows the Run history bubble', () => {
+    const s = fixtureSnapshot()
+    render(withData(<Dashboard character={thrall()} snapshot={s} now={FIXTURE_NOW} />))
+    const bubble = screen.getByRole('button', { name: /Run history/ })
+    expect(bubble.textContent).toContain('2 runs')
+    fireEvent.click(bubble)
+    expect(screen.getByRole('list', { name: 'Runs' })).toBeTruthy()
+  })
 })

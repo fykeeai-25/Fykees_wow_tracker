@@ -4,13 +4,26 @@
 
 local function link(id, name) return "|cffffffff|Hitem:" .. id .. "::::::::|h[" .. name .. "]|h|r" end
 
-time = function() return 1761980000 end
+clock = 1761980000
+time = function() return clock end
 GetRealmName = function() return "Firemaw" end
 UnitName = function() return "Thrall" end
 UnitRace = function() return "Orc", "Orc" end
 UnitClass = function() return "Shaman", "SHAMAN" end
 UnitLevel = function() return 24 end
-GetMoney = function() return 123456 end
+money = 123456
+GetMoney = function() return money end
+-- instance / XP state for the dungeon-run scenarios
+inInstance, instanceName, dead = false, nil, false
+xpNow, xpMax = 900, 2000
+IsInInstance = function() return inInstance, inInstance and "party" or "none" end
+GetInstanceInfo = function()
+  if not inInstance then return "Kalimdor", "none", 0, "", 0, 0, false, 1 end
+  return instanceName, "party", 1, "Normal", 5, 0, false, 36, 5
+end
+UnitXP = function() return xpNow end
+UnitXPMax = function() return xpMax end
+UnitIsDeadOrGhost = function() return dead end
 GetBuildInfo = function() return "1.60.1", "70058", "Oct 1 2026", 11600 end
 C_LegacyTree = { GetPoints = function() return 9 end }
 currencyRows = {
@@ -76,7 +89,7 @@ GetCraftReagentInfo = function() return nil end
 GetCraftReagentItemLink = function() return nil end
 GetCraftItemLink = function() return nil end
 
-local containers = {
+containers = {
   [0] = { { 2447, "Peacebloom", 4 }, { 2449, "Earthroot", 2 } },
   [-1] = { { 2447, "Peacebloom", 8 } },
 }
@@ -188,6 +201,49 @@ elseif scenario == "uncached-reagent" then
   -- reopening the window while one reagent item is not cached by the client
   uncachedReagent = true
   fire("TRADE_SKILL_UPDATE")
+elseif scenario == "dungeon-run" then
+  fire("PLAYER_ENTERING_WORLD") -- outside: nothing happens
+  clock = clock + 100
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 300
+  xpNow = 1500 fire("PLAYER_XP_UPDATE") -- +600
+  xpNow, xpMax = 300, 2200 fire("PLAYER_XP_UPDATE") -- level-up: +500 +300
+  money = money + 2500 fire("PLAYER_MONEY")
+  containers[0][1] = { 2447, "Peacebloom", 6 } -- had 4
+  containers[0][3] = { 5200, "Thief's Blade", 1 }
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1)
+  fire("ENCOUNTER_END", 2, "Sneed", 1, 5, 0) -- wipe: not a kill
+  fire("PLAYER_DEAD")
+  -- released: the ghost appears at the graveyard outside – the run goes on
+  dead, inInstance = true, false
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 120
+  dead, inInstance = false, true
+  fire("PLAYER_ENTERING_WORLD")
+  fire("ENCOUNTER_END", 3, "Edwin VanCleef", 1, 5, 1)
+  fire("LFG_COMPLETION_REWARD")
+  clock = clock + 900
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-port-back" or scenario == "dungeon-twice" then
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 600
+  xpNow = 1000 fire("PLAYER_XP_UPDATE") -- +100
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD") -- hearth out to sell
+  clock = clock + (scenario == "dungeon-port-back" and 300 or 3600)
+  inInstance = true
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 600
+  xpNow = 1200 fire("PLAYER_XP_UPDATE") -- +200
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-logout" then
+  -- logs out inside; the run is kept and still open in the file
+  inInstance, instanceName = true, "Wailing Caverns"
+  fire("PLAYER_ENTERING_WORLD")
 elseif scenario == "collapsed-recipes" then
   -- player collapses the "Potions" category in the profession window
   recipes = { { "Potions", "header" } }

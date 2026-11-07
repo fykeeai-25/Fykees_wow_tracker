@@ -173,6 +173,50 @@ describe.skipIf(!lua)('addon → app contract', () => {
     })
   })
 
+  describe('dungeon runs', () => {
+    it('records a run with bosses killed, deaths, XP across a level-up, gold and loot', () => {
+      const s = run('dungeon-run')
+      expect(s.characters[0].runs).toEqual([
+        {
+          dungeon: 'The Deadmines',
+          difficulty: 'Normal',
+          startedAt: 1761980100,
+          endedAt: 1761981420,
+          level: 24,
+          xp: 1400,
+          money: 2500,
+          deaths: 1,
+          bosses: ["Rhahk'Zor", 'Edwin VanCleef'],
+          loot: [
+            { itemId: 2447, count: 2 },
+            { itemId: 5200, count: 1 }
+          ],
+          completed: true
+        }
+      ])
+      expect(s.itemNames[5200]).toBe("Thief's Blade")
+    })
+
+    it('leaving briefly and coming back to the same dungeon keeps one run', () => {
+      const runs = run('dungeon-port-back').characters[0].runs!
+      expect(runs).toHaveLength(1)
+      expect(runs[0]).toMatchObject({ dungeon: 'The Deadmines', xp: 300, startedAt: 1761980000, endedAt: 1761981500 })
+    })
+
+    it('coming back much later starts a new run', () => {
+      const runs = run('dungeon-twice').characters[0].runs!
+      expect(runs.map((r) => r.xp)).toEqual([100, 200])
+    })
+
+    it('a run still open at logout is not listed yet', () => {
+      expect(run('dungeon-logout').characters[0].runs ?? []).toEqual([])
+    })
+
+    it('no runs without entering an instance', () => {
+      expect(run().characters[0].runs ?? []).toEqual([])
+    })
+  })
+
   it('collapsing a recipe category keeps the hidden recipes', () => {
     const alch = run('collapsed-recipes').characters[0].professions.find((p) => p.name === 'Alchemy')!
     expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])

@@ -129,4 +129,41 @@ describe('normalize', () => {
     expect(thrall.professions.find((p) => p.name === 'Alchemy')!.scannedAt).toBe(1761980000 + 1000)
     expect(s.accountBank!.seenAt).toBe(1761980000 + 1000)
   })
+  it('reads dungeon runs oldest first and drops invalid entries', () => {
+    const s = normalize(raw())
+    const thrall = s.characters.find((c) => c.name === 'Thrall')!
+    expect(thrall.runs!.map((r) => r.dungeon)).toEqual(['Wailing Caverns', 'The Deadmines'])
+    expect(thrall.runs![1]).toEqual({
+      dungeon: 'The Deadmines',
+      difficulty: 'Normal',
+      startedAt: 1761970000,
+      endedAt: 1761971500,
+      level: 23,
+      xp: 4200,
+      money: 15320,
+      deaths: 1,
+      bosses: ["Rhahk'Zor", 'Edwin VanCleef'],
+      loot: [
+        { itemId: 2447, count: 3 },
+        { itemId: 5200, count: 1 }
+      ],
+      completed: true
+    })
+    const jaina = s.characters.find((c) => c.name === 'Jaina')!
+    expect(jaina.runs![0].difficulty).toBeUndefined()
+    expect(jaina.runs![0].completed).toBeUndefined()
+  })
+
+  it('a run without a dungeon name or times is dropped', () => {
+    const db = raw() as any
+    db.characters['Firemaw-Jaina'].runs = [{ dungeon: 'X' }, { startedAt: 1, endedAt: 2 }]
+    expect(normalize(db).characters.find((c) => c.name === 'Jaina')!.runs).toEqual([])
+  })
+
+  it('rebaseTimes shifts run times too', () => {
+    const s = rebaseTimes(normalize(raw()), 1761980000 + 1000)
+    const thrall = s.characters.find((c) => c.name === 'Thrall')!
+    expect(thrall.runs![1].startedAt).toBe(1761970000 + 1000)
+    expect(thrall.runs![1].endedAt).toBe(1761971500 + 1000)
+  })
 })
