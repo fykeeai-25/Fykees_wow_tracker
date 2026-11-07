@@ -121,6 +121,29 @@ describe.skipIf(!lua)('addon → app contract', () => {
     expect(c.currencies).toBeUndefined()
   })
 
+  it('probes the profession API of clients without the Classic trade skill functions', () => {
+    const out = execFileSync(
+      lua!,
+      [join(repo, 'addon/test/harness.lua'), join(repo, 'addon/AzerothTracker/AzerothTracker.lua'), 'modern-trade-api'],
+      { encoding: 'utf8' }
+    )
+    const db = parseSavedVariables(out) as any
+    const probe = db.probe
+    expect(probe.globals).toContain('GetProfessions')
+    expect(probe.globals).toContain('C_TradeSkillUI')
+    expect(probe.namespaces.C_TradeSkillUI).toEqual(['Broken', 'GetAllRecipeIDs', 'GetBaseProfessionInfo', 'GetRecipeInfo'])
+    expect(probe.events.TRADE_SKILL_SHOW).toBe(1)
+    expect(probe.events.TRADE_SKILL_LIST_UPDATE).toBe(1)
+    const calls = probe.calls.TRADE_SKILL_LIST_UPDATE
+    expect(calls['GetProfessions()']).toEqual([1, 'nil', 'nil', 'nil', 3])
+    expect(calls['GetProfessionInfo(1)'][0]).toBe('Alchemy')
+    expect(calls['C_TradeSkillUI.GetAllRecipeIDs()']).toEqual([[2330, 2329]])
+    expect(calls['C_TradeSkillUI.GetRecipeInfo(2330)']).toEqual([{ recipeID: 2330, name: 'Minor Healing Potion', learned: true }])
+    expect(calls['C_TradeSkillUI.GetBaseProfessionInfo()'][0]).toMatchObject({ professionName: 'Alchemy' })
+    // the app still reads the file; the probe does not break anything
+    expect(normalize(db).characters[0].bags?.items).toEqual({ 2447: 4, 2449: 2 })
+  })
+
   it('collapsing a recipe category keeps the hidden recipes', () => {
     const alch = run('collapsed-recipes').characters[0].professions.find((p) => p.name === 'Alchemy')!
     expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])

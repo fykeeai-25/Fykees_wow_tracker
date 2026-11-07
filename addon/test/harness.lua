@@ -98,6 +98,25 @@ end
 SlashCmdList = {}
 
 if (arg[2] or "") == "no-currency-api" then C_CurrencyInfo = nil end
+if (arg[2] or "") == "modern-trade-api" then
+  -- WoW: Forever 1.60 has none of the Classic skill / trade skill / craft functions
+  for _, n in ipairs({ "GetNumSkillLines", "GetSkillLineInfo", "GetTradeSkillLine", "GetNumTradeSkills",
+    "GetTradeSkillInfo", "GetTradeSkillNumReagents", "GetTradeSkillReagentInfo", "GetTradeSkillReagentItemLink",
+    "GetTradeSkillRecipeLink", "GetTradeSkillItemLink", "GetTradeSkillNumMade", "GetCraftDisplaySkillLine",
+    "GetNumCrafts", "GetCraftInfo", "GetCraftNumReagents", "GetCraftReagentInfo", "GetCraftReagentItemLink",
+    "GetCraftItemLink" }) do _G[n] = nil end
+  GetProfessions = function() return 1, nil, nil, nil, 3 end
+  GetProfessionInfo = function(i)
+    if i == 1 then return "Alchemy", "icon", 142, 150, 0, 0, 171 end
+    return "Cooking", "icon", 50, 75, 0, 0, 185
+  end
+  C_TradeSkillUI = {
+    GetAllRecipeIDs = function() return { 2330, 2329 } end,
+    GetBaseProfessionInfo = function() return { professionName = "Alchemy", skillLevel = 142, maxSkillLevel = 150 } end,
+    GetRecipeInfo = function(id) return { recipeID = id, name = "Minor Healing Potion", learned = true } end,
+    Broken = function() error("boom") end,
+  }
+end
 local chunk = assert(loadfile(arg[1]))
 chunk("AzerothTracker")
 
@@ -113,6 +132,7 @@ if scenario == "cache-arrives" then uncachedReagent = true end
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
 fire("TRADE_SKILL_SHOW")
+if scenario == "modern-trade-api" then fire("TRADE_SKILL_LIST_UPDATE") end
 fire("BANKFRAME_OPENED")
 fire("BAG_UPDATE", 0)
 fire("BANKFRAME_CLOSED")
