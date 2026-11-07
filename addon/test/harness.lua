@@ -98,7 +98,7 @@ end
 SlashCmdList = {}
 
 if (arg[2] or "") == "no-currency-api" then C_CurrencyInfo = nil end
-if (arg[2] or "") == "modern-trade-api" then
+if string.sub(arg[2] or "", 1, 6) == "modern" then
   -- WoW: Forever 1.60 has none of the Classic skill / trade skill / craft functions
   for _, n in ipairs({ "GetNumSkillLines", "GetSkillLineInfo", "GetTradeSkillLine", "GetNumTradeSkills",
     "GetTradeSkillInfo", "GetTradeSkillNumReagents", "GetTradeSkillReagentInfo", "GetTradeSkillReagentItemLink",
@@ -110,10 +110,34 @@ if (arg[2] or "") == "modern-trade-api" then
     if i == 1 then return "Alchemy", "icon", 142, 150, 0, 0, 171 end
     return "Cooking", "icon", 50, 75, 0, 0, 185
   end
+  -- modern recipe API (retail style): recipe ID = spell ID, reagents in schematic slots
+  local basic = 1
+  Enum = { CraftingReagentType = { Modifying = 0, Basic = basic, Finishing = 2 } }
+  local itemNames = { [2447] = "Peacebloom", [2449] = "Earthroot", [765] = "Silverleaf", [118] = "Minor Healing Potion" }
+  C_Item = { GetItemNameByID = function(id) return itemNames[id] end }
+  local function slot(itemId, qty, reagentType, required)
+    return { reagents = { { itemID = itemId } }, quantityRequired = qty, reagentType = reagentType, required = required }
+  end
+  local modernRecipes = {
+    [2330] = { info = { recipeID = 2330, name = "Minor Healing Potion", learned = true, relativeDifficulty = 3 },
+      schematic = { recipeID = 2330, outputItemID = 118, quantityMin = 1, quantityMax = 1,
+        reagentSlotSchematics = { slot(2447, 1, basic, true), slot(2449, 1, basic, true), slot(9000, 1, 0, false) } } },
+    [2329] = { info = { recipeID = 2329, name = "Elixir of Lion's Strength", learned = true, relativeDifficulty = 2 },
+      schematic = { recipeID = 2329, outputItemID = 2454, quantityMin = 1, quantityMax = 1,
+        reagentSlotSchematics = { slot(2449, 1, basic, true), slot(765, 1, basic, true) } } },
+    [2337] = { info = { recipeID = 2337, name = "Lesser Healing Potion", learned = false, relativeDifficulty = 0 },
+      schematic = { recipeID = 2337, outputItemID = 858, quantityMin = 1, quantityMax = 1, reagentSlotSchematics = {} } },
+  }
+  linkedTradeSkill = false
   C_TradeSkillUI = {
-    GetAllRecipeIDs = function() return { 2330, 2329 } end,
+    IsTradeSkillReady = function() return true end,
+    IsTradeSkillLinked = function() return linkedTradeSkill end,
+    IsTradeSkillGuild = function() return false end,
+    IsNPCCrafting = function() return false end,
+    GetAllRecipeIDs = function() return { 2330, 2329, 2337 } end,
     GetBaseProfessionInfo = function() return { professionName = "Alchemy", skillLevel = 142, maxSkillLevel = 150 } end,
-    GetRecipeInfo = function(id) return { recipeID = id, name = "Minor Healing Potion", learned = true } end,
+    GetRecipeInfo = function(id) return modernRecipes[id] and modernRecipes[id].info end,
+    GetRecipeSchematic = function(id) return modernRecipes[id] and modernRecipes[id].schematic end,
     Broken = function() error("boom") end,
   }
 end
@@ -132,7 +156,8 @@ if scenario == "cache-arrives" then uncachedReagent = true end
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
 fire("TRADE_SKILL_SHOW")
-if scenario == "modern-trade-api" then fire("TRADE_SKILL_LIST_UPDATE") end
+if scenario == "modern-linked" then linkedTradeSkill = true end
+if string.sub(scenario, 1, 6) == "modern" then fire("TRADE_SKILL_LIST_UPDATE") end
 fire("BANKFRAME_OPENED")
 fire("BAG_UPDATE", 0)
 fire("BANKFRAME_CLOSED")

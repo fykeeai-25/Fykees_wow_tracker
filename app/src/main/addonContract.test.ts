@@ -131,17 +131,46 @@ describe.skipIf(!lua)('addon → app contract', () => {
     const probe = db.probe
     expect(probe.globals).toContain('GetProfessions')
     expect(probe.globals).toContain('C_TradeSkillUI')
-    expect(probe.namespaces.C_TradeSkillUI).toEqual(['Broken', 'GetAllRecipeIDs', 'GetBaseProfessionInfo', 'GetRecipeInfo'])
+    expect(probe.namespaces.C_TradeSkillUI).toContain('GetAllRecipeIDs')
+    expect(probe.namespaces.C_TradeSkillUI).toContain('Broken')
     expect(probe.events.TRADE_SKILL_SHOW).toBe(1)
     expect(probe.events.TRADE_SKILL_LIST_UPDATE).toBe(1)
     const calls = probe.calls.TRADE_SKILL_LIST_UPDATE
     expect(calls['GetProfessions()']).toEqual([1, 'nil', 'nil', 'nil', 3])
     expect(calls['GetProfessionInfo(1)'][0]).toBe('Alchemy')
-    expect(calls['C_TradeSkillUI.GetAllRecipeIDs()']).toEqual([[2330, 2329]])
-    expect(calls['C_TradeSkillUI.GetRecipeInfo(2330)']).toEqual([{ recipeID: 2330, name: 'Minor Healing Potion', learned: true }])
+    expect(calls['C_TradeSkillUI.GetAllRecipeIDs()']).toEqual([[2330, 2329, 2337]])
+    expect(calls['C_TradeSkillUI.GetRecipeInfo(2330)'][0]).toMatchObject({ recipeID: 2330, name: 'Minor Healing Potion', learned: true })
     expect(calls['C_TradeSkillUI.GetBaseProfessionInfo()'][0]).toMatchObject({ professionName: 'Alchemy' })
     // the app still reads the file; the probe does not break anything
     expect(normalize(db).characters[0].bags?.items).toEqual({ 2447: 4, 2449: 2 })
+  })
+
+  describe('modern profession API (WoW: Forever 1.60)', () => {
+    it('reads professions and skill from GetProfessions', () => {
+      const c = run('modern-trade-api').characters[0]
+      expect(c.professions.map((p) => `${p.name} ${p.skill}/${p.maxSkill}`)).toEqual(['Alchemy 142/150', 'Cooking 50/75'])
+    })
+
+    it('reads learned recipes with required reagents, created item and difficulty', () => {
+      const s = run('modern-trade-api')
+      const alch = s.characters[0].professions.find((p) => p.name === 'Alchemy')!
+      expect(alch.scannedAt).toBe(1761980000)
+      expect(alch.knownRecipes!.map((r) => r.name)).toEqual(["Elixir of Lion's Strength", 'Minor Healing Potion'])
+      const mhp = alch.knownRecipes!.find((r) => r.name === 'Minor Healing Potion')!
+      expect(mhp).toMatchObject({ spellId: 2330, createdItemId: 118, numMade: 1, difficulty: 'gray' })
+      // optional (non-basic) reagent slots are not part of the recipe cost
+      expect(mhp.reagents).toEqual([
+        { itemId: 2447, count: 1 },
+        { itemId: 2449, count: 1 }
+      ])
+      expect(alch.knownRecipes!.find((r) => r.name === "Elixir of Lion's Strength")!.difficulty).toBe('green')
+      expect(s.itemNames).toMatchObject({ 118: 'Minor Healing Potion', 765: 'Silverleaf', 2447: 'Peacebloom' })
+    })
+
+    it("never stores recipes from someone else's linked profession window", () => {
+      const alch = run('modern-linked').characters[0].professions.find((p) => p.name === 'Alchemy')!
+      expect(alch.knownRecipes ?? []).toEqual([])
+    })
   })
 
   it('collapsing a recipe category keeps the hidden recipes', () => {
