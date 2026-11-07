@@ -58,6 +58,35 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .profession-body.no-side { grid-template-columns: minmax(0, 1fr); }
 .side-slot:empty { display: none; }
 .side-slot .materials { position: static; margin-top: 12px; }
+
+/* Run history */
+.run-filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+.run-filters label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.run-filters select { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; }
+.runs-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; }
+.runs-body.no-side { grid-template-columns: minmax(0, 1fr); }
+.run-totals { margin: 0 0 8px; }
+.run-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.run-row { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto auto auto; align-items: center; gap: 12px; text-align: left; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; font: inherit; }
+.run-row:has(.run-char) { grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto; }
+.run-row:hover { border-color: var(--accent); }
+.run-row[aria-current='true'] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.run-dungeon { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run-detail { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; align-self: start; }
+.side-slot .run-detail { margin-top: 12px; }
+.run-detail header { display: flex; align-items: center; gap: 8px; }
+.run-detail h3 { margin: 0; font-size: 15px; }
+.run-detail h4 { margin: 12px 0 4px; font-size: 13px; color: var(--muted); }
+.run-detail dl { margin: 10px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+.run-detail dt { color: var(--muted); }
+.run-detail dd { margin: 0; }
+.run-detail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.run-loot li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.run-badge { font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); }
+@media (max-width: 1000px) {
+  .runs-body { grid-template-columns: minmax(0, 1fr); }
+  .run-row, .run-row:has(.run-char) { grid-template-columns: minmax(0, 1fr) auto auto; }
+}
 .recipes ul, .materials ul { list-style: none; margin: 0; padding: 0; }
 .recipes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 16px 0 6px; }
 .recipe-row { display: flex; align-items: stretch; gap: 4px; margin-bottom: 4px; }

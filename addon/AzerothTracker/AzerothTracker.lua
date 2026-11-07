@@ -591,6 +591,145 @@ local function scanBank()
   if account then db.accountBank = scanContainers(account) end
 end
 
+-- ------------------------------------------------------------ dungeon runs
+-- A run starts when the character enters a dungeon or raid and ends when it leaves.
+-- Loot is the difference of the bags between start and end, because loot chat text
+-- may be hidden from addons inside instances. Only the player's own character:
+-- no combat log, nothing about other players.
+
+local MAX_RUNS = 200
+local REOPEN_WITHIN = 15 * 60 -- back in the same dungeon within 15 min = same run
+local RUN_TYPES = { party = true, raid = true }
+
+-- Values the client hides from addons become nil.
+local function plain(v)
+  if issecretvalue and issecretvalue(v) then return nil end
+  return v
+end
+
+local function xpNow() return UnitXP and plain(UnitXP("player")) or 0 end
+local function xpMaxNow() return UnitXPMax and plain(UnitXPMax("player")) or 0 end
+local function bagItems() return scanContainers(bagList()).items end
+
+local function currentInstance()
+  if not (IsInInstance and GetInstanceInfo) then return nil end
+  local inside, kind = IsInInstance()
+  if not inside or not RUN_TYPES[kind] then return nil end
+  local name, _, _, difficultyName = GetInstanceInfo()
+  name, difficultyName = plain(name), plain(difficultyName)
+  if type(name) ~= "string" or name == "" then return nil end
+  if type(difficultyName) ~= "string" or difficultyName == "" then difficultyName = nil end
+  return { name = name, difficulty = difficultyName }
+end
+
+-- XP since the last mark; a level-up in between counts the rest of the old level.
+local function addXp(run)
+  local cur, max = xpNow() or 0, xpMaxNow() or 0
+  if cur >= run.xpMark then
+    run.xp = run.xp + (cur - run.xpMark)
+  else
+    run.xp = run.xp + math.max(0, run.xpMaxMark - run.xpMark) + cur
+  end
+  run.xpMark, run.xpMaxMark = cur, max
+end
+
+local function startRun(c, inst)
+  c.activeRun = {
+    dungeon = inst.name, difficulty = inst.difficulty,
+    startedAt = now(), lastSeenAt = now(), level = UnitLevel("player"),
+    xp = 0, xpMark = xpNow() or 0, xpMaxMark = xpMaxNow() or 0,
+    moneyStart = GetMoney and GetMoney() or 0, bagsStart = bagItems(),
+    deaths = 0, bosses = {},
+  }
+end
+
+local function finishRun(c, endedAt)
+  local run = c.activeRun
+  if not run then return end
+  addXp(run)
+  local loot, bags = {}, bagItems()
+  for id, n in pairs(bags) do
+    local gained = n - (run.bagsStart[id] or 0)
+    if gained > 0 then loot[#loot + 1] = { itemId = id, count = gained } end
+  end
+  table.sort(loot, function(a, b) return a.itemId < b.itemId end)
+  c.runs = c.runs or {}
+  c.runs[#c.runs + 1] = {
+    dungeon = run.dungeon, difficulty = run.difficulty,
+    startedAt = run.startedAt, endedAt = endedAt, level = run.level,
+    xp = run.xp, money = (GetMoney and GetMoney() or 0) - run.moneyStart,
+    deaths = run.deaths, bosses = run.bosses, loot = loot, completed = run.completed,
+  }
+  while #c.runs > MAX_RUNS do table.remove(c.runs, 1) end
+  -- kept so a quick trip out (hearth, sell, summon back) can resume this run
+  run.endedAt = endedAt
+  c.lastRun = run
+  c.activeRun = nil
+end
+
+local function reopenRun(c)
+  local run = c.lastRun
+  c.lastRun = nil
+  local last = c.runs and c.runs[#c.runs]
+  if last and last.startedAt == run.startedAt then table.remove(c.runs) end
+  run.endedAt = nil
+  run.xpMark, run.xpMaxMark = xpNow() or 0, xpMaxNow() or 0
+  run.lastSeenAt = now()
+  c.activeRun = run
+end
+
+-- Called whenever the character may have entered or left an instance.
+local function checkInstance()
+  local c = getChar()
+  local inst = currentInstance()
+  local run = c.activeRun
+  if run then
+    if inst and inst.name == run.dungeon then
+      run.lastSeenAt = now()
+      return
+    end
+    -- a released ghost appears outside at the graveyard: the run goes on
+    if not inst and UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return end
+    -- logged out inside and came back elsewhere: it ended when last seen
+    local endedAt = run.loggedOut and run.lastSeenAt or now()
+    finishRun(c, endedAt)
+  end
+  if inst then
+    local last = c.lastRun
+    if last and last.dungeon == inst.name and last.difficulty == inst.difficulty
+      and now() - (last.endedAt or 0) <= REOPEN_WITHIN then
+      reopenRun(c)
+    else
+      c.lastRun = nil
+      startRun(c, inst)
+    end
+  end
+end
+
+local function runEvent(fn)
+  return function(...)
+    local run = db and getChar().activeRun
+    if run then
+      fn(run, ...)
+      run.lastSeenAt = now()
+    end
+  end
+end
+
+local onRunXp = runEvent(function(run) addXp(run) end)
+local onRunDeath = runEvent(function(run) run.deaths = run.deaths + 1 end)
+local onRunEncounter = runEvent(function(run, encounterId, encounterName, _, _, success)
+  if plain(success) ~= 1 then return end
+  local name = plain(encounterName)
+  if type(name) ~= "string" or name == "" then name = "Boss " .. tostring(plain(encounterId) or "?") end
+  run.bosses[#run.bosses + 1] = name
+end)
+local onRunCompleted = runEvent(function(run) run.completed = true end)
+local onRunLogout = runEvent(function(run)
+  addXp(run)
+  run.loggedOut = true
+end)
+
 -- --------------------------------------------------------------- events
 
 local frame = CreateFrame("Frame")
@@ -627,6 +766,19 @@ local handlers = {
     scanBags()
   end,
   PLAYER_MONEY = updateMoney,
+  PLAYER_ENTERING_WORLD = function()
+    checkInstance()
+    -- logout also fires on /reload: once back in the same dungeon the run is live again
+    local run = getChar().activeRun
+    if run then run.loggedOut = nil end
+  end,
+  ZONE_CHANGED_NEW_AREA = checkInstance,
+  PLAYER_ALIVE = checkInstance,
+  PLAYER_UNGHOST = checkInstance,
+  PLAYER_XP_UPDATE = onRunXp,
+  PLAYER_DEAD = onRunDeath,
+  ENCOUNTER_END = onRunEncounter,
+  LFG_COMPLETION_REWARD = onRunCompleted,
   CURRENCY_DISPLAY_UPDATE = updateCurrencies,
   PLAYER_LEVEL_UP = updateBasics,
   SKILL_LINES_CHANGED = updateProfessions,
@@ -661,6 +813,7 @@ local handlers = {
   BANKFRAME_CLOSED = function() bankOpen = false end,
   PLAYERBANKSLOTS_CHANGED = scanBank,
   PLAYER_LOGOUT = function()
+    onRunLogout()
     updateBasics()
     updateMoney()
     updateCurrencies()

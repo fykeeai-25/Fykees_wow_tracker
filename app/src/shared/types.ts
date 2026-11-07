@@ -31,6 +31,26 @@ export interface Profession {
   knownRecipes?: KnownRecipe[]
 }
 
+/** One dungeon or raid visit, from entering to leaving (see the addon's "dungeon runs"). */
+export interface Run {
+  dungeon: string
+  difficulty?: string
+  startedAt: number
+  endedAt: number
+  /** character level when the run started */
+  level?: number
+  xp: number
+  /** net copper change during the run */
+  money: number
+  deaths: number
+  /** bosses killed, in order */
+  bosses: string[]
+  /** items gained in the bags during the run */
+  loot: Reagent[]
+  /** the dungeon finder reported the run as complete */
+  completed?: boolean
+}
+
 export interface Character {
   key: string
   name: string
@@ -47,6 +67,8 @@ export interface Character {
   moneyAt?: number
   /** currency name → amount */
   currencies?: Record<string, number>
+  /** finished dungeon runs, oldest first */
+  runs?: Run[]
 }
 
 export interface Diagnostics {

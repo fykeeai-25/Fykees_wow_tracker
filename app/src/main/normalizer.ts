@@ -1,4 +1,4 @@
-import type { Character, Container, Diagnostics, Difficulty, KnownRecipe, Profession, Reagent, TrackerSnapshot } from '../shared/types'
+import type { Character, Container, Diagnostics, Difficulty, KnownRecipe, Profession, Reagent, Run, TrackerSnapshot } from '../shared/types'
 
 type Obj = Record<string, unknown>
 
@@ -61,6 +61,24 @@ function profession(name: string, v: unknown): Profession | undefined {
   return p
 }
 
+function run(v: unknown): Run | undefined {
+  if (!isObj(v) || typeof v.dungeon !== 'string' || v.dungeon === '') return undefined
+  if (typeof v.startedAt !== 'number' || typeof v.endedAt !== 'number') return undefined
+  return {
+    dungeon: v.dungeon,
+    ...(typeof v.difficulty === 'string' && v.difficulty !== '' && { difficulty: v.difficulty }),
+    startedAt: v.startedAt,
+    endedAt: v.endedAt,
+    ...(typeof v.level === 'number' && { level: v.level }),
+    xp: num(v.xp),
+    money: num(v.money),
+    deaths: num(v.deaths),
+    bosses: list(v.bosses).filter((b): b is string => typeof b === 'string'),
+    loot: reagents(v.loot),
+    ...(v.completed === true && { completed: true })
+  }
+}
+
 function character(key: string, v: Obj): Character {
   const professions = isObj(v.professions)
     ? Object.entries(v.professions)
@@ -91,6 +109,12 @@ function character(key: string, v: Obj): Character {
   const bank = container(v.bank)
   if (bags) c.bags = bags
   if (bank) c.bank = bank
+  if (v.runs !== undefined) {
+    c.runs = list(v.runs)
+      .map(run)
+      .filter((r): r is Run => r !== undefined)
+      .sort((a, b) => a.startedAt - b.startedAt)
+  }
   return c
 }
 
@@ -122,6 +146,12 @@ export function rebaseTimes(snapshot: TrackerSnapshot, now: number): TrackerSnap
     for (const p of c.professions) if (p.scannedAt !== undefined) p.scannedAt += delta
   }
   for (const c of containers) c.seenAt += delta
+  for (const c of s.characters) {
+    for (const r of c.runs ?? []) {
+      r.startedAt += delta
+      r.endedAt += delta
+    }
+  }
   return s
 }
 
