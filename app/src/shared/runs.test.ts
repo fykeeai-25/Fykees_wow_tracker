@@ -37,4 +37,11 @@ describe('runs', () => {
     expect(runTotals(rows)).toEqual({ count: 2, xp: 10300, money: 24120, deaths: 1, avgDuration: 2100 })
     expect(runTotals([])).toEqual({ count: 0, xp: 0, money: 0, deaths: 0, avgDuration: 0 })
   })
+  it('totals leave out a run in progress', () => {
+    const s = fixtureSnapshot()
+    s.characters[1].runs!.push({ dungeon: 'X', startedAt: 1, endedAt: 2, xp: 999, money: 0, deaths: 5, bosses: [], loot: [], inProgress: true })
+    const rows = filterRuns(runRows(s), { characterKey: 'Firemaw-Thrall' })
+    expect(rows).toHaveLength(3)
+    expect(runTotals(rows)).toMatchObject({ count: 2, xp: 10300, deaths: 1 })
+  })
 })

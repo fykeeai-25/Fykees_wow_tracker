@@ -208,8 +208,18 @@ describe.skipIf(!lua)('addon → app contract', () => {
       expect(runs.map((r) => r.xp)).toEqual([100, 200])
     })
 
-    it('a run still open at logout is not listed yet', () => {
-      expect(run('dungeon-logout').characters[0].runs ?? []).toEqual([])
+    it('a run still open at logout is listed as in progress', () => {
+      const runs = run('dungeon-logout').characters[0].runs!
+      expect(runs).toHaveLength(1)
+      expect(runs[0]).toMatchObject({ dungeon: 'Wailing Caverns', inProgress: true, startedAt: 1761980000, bosses: [] })
+    })
+
+    it('resetting and running the same dungeon again right away gives two runs', () => {
+      const runs = run('dungeon-farm').characters[0].runs!
+      expect(runs.map((r) => ({ bosses: r.bosses, xp: r.xp, deaths: r.deaths, money: r.money, startedAt: r.startedAt, endedAt: r.endedAt }))).toEqual([
+        { bosses: ["Rhahk'Zor", 'Edwin VanCleef'], xp: 600, deaths: 0, money: 0, startedAt: 1761980000, endedAt: 1761980600 },
+        { bosses: ["Rhahk'Zor"], xp: 300, deaths: 1, money: 700, startedAt: 1761980720, endedAt: 1761981320 }
+      ])
     })
 
     it('no runs without entering an instance', () => {

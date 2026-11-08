@@ -91,4 +91,36 @@ describe('Run history', () => {
     fireEvent.change(screen.getByLabelText('Dungeon'), { target: { value: 'Wailing Caverns' } })
     expect(screen.getByText('No runs match the filter.')).toBeTruthy()
   })
+  describe('run in progress', () => {
+    const withActive = () => {
+      const s = fixtureSnapshot()
+      const thrall = s.characters.find((c) => c.name === 'Thrall')!
+      thrall.runs!.push({
+        dungeon: 'City of Dalaran', startedAt: FIXTURE_NOW - 1800, endedAt: FIXTURE_NOW - 60, level: 24,
+        xp: 1200, money: 5000, deaths: 2, bosses: ['Atrexis the Grave Knight'], loot: [], inProgress: true
+      })
+      return { s, thrall }
+    }
+
+    it('the summary shows it', () => {
+      const { s, thrall } = withActive()
+      render(withData(<RunsSummary character={thrall} snapshot={s} now={FIXTURE_NOW} />))
+      expect(screen.getByText('In progress: City of Dalaran · 1 boss · 29 min so far')).toBeTruthy()
+      expect(screen.getByText('2 runs')).toBeTruthy()
+    })
+
+    it('it is listed first, marked, and left out of the totals', () => {
+      const { s, thrall } = withActive()
+      render(withData(<RunsDetail character={thrall} snapshot={s} now={FIXTURE_NOW} />))
+      const first = rows()[0]
+      expect(first.querySelector('.run-dungeon')!.textContent).toBe('City of Dalaran')
+      expect(first.textContent).toContain('In progress')
+      expect(screen.getByText('2 runs · 10,300 XP · avg 35 min · 1 death')).toBeTruthy()
+      fireEvent.click(first)
+      const panel = screen.getByRole('region', { name: 'Run details' })
+      expect(within(panel).getByText('In progress')).toBeTruthy()
+      expect(within(panel).getByText('29 min so far')).toBeTruthy()
+      expect(within(panel).queryByText('Completed')).toBeNull()
+    })
+  })
 })

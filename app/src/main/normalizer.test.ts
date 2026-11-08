@@ -166,4 +166,32 @@ describe('normalize', () => {
     expect(thrall.runs![1].startedAt).toBe(1761970000 + 1000)
     expect(thrall.runs![1].endedAt).toBe(1761971500 + 1000)
   })
+  it('a run still in progress is listed last, with loot and gold so far from bags and money', () => {
+    const db = raw() as any
+    const thrall = db.characters['Firemaw-Thrall']
+    thrall.money = 125000
+    thrall.bags = { seenAt: 1761980500, items: { 2447: 9, 765: 1 } }
+    thrall.activeRun = {
+      dungeon: 'City of Dalaran', startedAt: 1761979000, lastSeenAt: 1761980500, level: 24,
+      xp: 1200, xpMark: 5, xpMaxMark: 10, moneyStart: 120000, deaths: 2,
+      bagsStart: { 2447: 4 }, bosses: ['Atrexis the Grave Knight']
+    }
+    const runs = normalize(db).characters.find((c) => c.name === 'Thrall')!.runs!
+    expect(runs).toHaveLength(3)
+    expect(runs[2]).toEqual({
+      dungeon: 'City of Dalaran',
+      startedAt: 1761979000,
+      endedAt: 1761980500,
+      level: 24,
+      xp: 1200,
+      money: 5000,
+      deaths: 2,
+      bosses: ['Atrexis the Grave Knight'],
+      loot: [
+        { itemId: 765, count: 1 },
+        { itemId: 2447, count: 5 }
+      ],
+      inProgress: true
+    })
+  })
 })

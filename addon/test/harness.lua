@@ -240,6 +240,26 @@ elseif scenario == "dungeon-port-back" or scenario == "dungeon-twice" then
   xpNow = 1200 fire("PLAYER_XP_UPDATE") -- +200
   inInstance = false
   fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-farm" then
+  -- clears the dungeon, resets it and goes straight back in
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1)
+  fire("ENCOUNTER_END", 3, "Edwin VanCleef", 1, 5, 1)
+  xpNow = 1500 fire("PLAYER_XP_UPDATE") -- +600
+  clock = clock + 600
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 120
+  inInstance = true
+  fire("PLAYER_ENTERING_WORLD")
+  money = money + 700 fire("PLAYER_MONEY")
+  xpNow = 1800 fire("PLAYER_XP_UPDATE") -- +300
+  fire("PLAYER_DEAD")
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1) -- killed again: a new instance
+  clock = clock + 600
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
 elseif scenario == "dungeon-logout" then
   -- logs out inside; the run is kept and still open in the file
   inInstance, instanceName = true, "Wailing Caverns"
