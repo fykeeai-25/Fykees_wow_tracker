@@ -67,11 +67,10 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .runs-body.no-side { grid-template-columns: minmax(0, 1fr); }
 .run-totals { margin: 0 0 8px; }
 .run-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.run-row { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto auto auto; align-items: center; gap: 12px; text-align: left; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; font: inherit; }
-.run-row:has(.run-char) { grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto; }
+.run-row { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; font: inherit; }
 .run-row:hover { border-color: var(--accent); }
 .run-row[aria-current='true'] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-.run-dungeon { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run-dungeon { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .run-detail { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; align-self: start; }
 .side-slot .run-detail { margin-top: 12px; }
 .run-detail header { display: flex; align-items: center; gap: 8px; }
@@ -83,9 +82,11 @@ main { flex: 1; min-height: 0; overflow: auto; }
 .run-detail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .run-loot li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .run-badge { font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); }
+.run-badge.live { border-color: var(--ok); color: var(--ok); }
+.run-live { color: var(--ok); }
 @media (max-width: 1000px) {
   .runs-body { grid-template-columns: minmax(0, 1fr); }
-  .run-row, .run-row:has(.run-char) { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .run-row { flex-wrap: wrap; }
 }
 .recipes ul, .materials ul { list-style: none; margin: 0; padding: 0; }
 .recipes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 16px 0 6px; }

@@ -39,7 +39,9 @@ export function durationText(seconds: number): string {
   return `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`
 }
 
-export function runTotals(rows: RunRow[]): { count: number; xp: number; money: number; deaths: number; avgDuration: number } {
+/** Totals over finished runs (a run in progress is left out). */
+export function runTotals(all: RunRow[]): { count: number; xp: number; money: number; deaths: number; avgDuration: number } {
+  const rows = all.filter((r) => !r.run.inProgress)
   const count = rows.length
   const sum = (f: (r: Run) => number): number => rows.reduce((n, r) => n + f(r.run), 0)
   return {

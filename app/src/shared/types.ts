@@ -49,6 +49,8 @@ export interface Run {
   loot: Reagent[]
   /** the dungeon finder reported the run as complete */
   completed?: boolean
+  /** still inside (or logged out inside): endedAt is when it was last seen */
+  inProgress?: boolean
 }
 
 export interface Character {

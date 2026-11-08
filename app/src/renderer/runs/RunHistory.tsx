@@ -22,13 +22,20 @@ const runKey = (r: RunRow): string => `${r.characterKey}/${r.run.startedAt}`
 
 /** Quick view for the Run history bubble. */
 export function RunsSummary({ character, now }: Props) {
-  const runs = character.runs ?? []
-  if (runs.length === 0) return <p className="muted">No runs yet – enter a dungeon, then /reload after leaving it.</p>
-  const last = runs.reduce((a, b) => (b.startedAt > a.startedAt ? b : a))
+  const all = character.runs ?? []
+  const open = all.find((r) => r.inProgress)
+  const runs = all.filter((r) => !r.inProgress)
+  if (all.length === 0) return <p className="muted">No runs yet – enter a dungeon, then /reload after leaving it.</p>
+  const last = runs.length > 0 ? runs.reduce((a, b) => (b.startedAt > a.startedAt ? b : a)) : undefined
   return (
     <div className="runs-summary">
+      {open && (
+        <p className="run-live">{`In progress: ${open.dungeon} · ${open.bosses.length} ${open.bosses.length === 1 ? 'boss' : 'bosses'} · ${durationText(runDuration(open))} so far`}</p>
+      )}
       <p>{plural(runs.length, 'run')}</p>
-      <p className="muted">{`Last: ${last.dungeon} · ${durationText(runDuration(last))} · ${agoText(Math.max(0, now - last.endedAt))}`}</p>
+      {last && (
+        <p className="muted">{`Last: ${last.dungeon} · ${durationText(runDuration(last))} · ${agoText(Math.max(0, now - last.endedAt))}`}</p>
+      )}
     </div>
   )
 }
@@ -40,7 +47,11 @@ function RunDetail({ row, snapshot }: { row: RunRow; snapshot: TrackerSnapshot }
     <section className="run-detail" aria-label="Run details">
       <header>
         <h3>{r.dungeon}</h3>
-        {r.completed && <span className="run-badge">Completed</span>}
+        {r.inProgress ? (
+          <span className="run-badge live">In progress</span>
+        ) : (
+          r.completed && <span className="run-badge">Completed</span>
+        )}
       </header>
       <dl>
         <dt>Character</dt>
@@ -52,7 +63,7 @@ function RunDetail({ row, snapshot }: { row: RunRow; snapshot: TrackerSnapshot }
           </>
         )}
         <dt>Duration</dt>
-        <dd>{durationText(runDuration(r))}</dd>
+        <dd>{`${durationText(runDuration(r))}${r.inProgress ? ' so far' : ''}`}</dd>
         <dt>XP</dt>
         <dd>{xpText(r.xp)}</dd>
         <dt>Gold</dt>
@@ -151,6 +162,7 @@ export function RunsDetail({ character, snapshot, now }: Props) {
                     onClick={() => setSelected(runKey(r))}
                   >
                     <span className="run-dungeon">{r.run.dungeon}</span>
+                    {r.run.inProgress && <span className="run-badge live">In progress</span>}
                     {!characterKey && <span className="run-char">{r.characterName}</span>}
                     <span className="muted">{durationText(runDuration(r.run))}</span>
                     <span className="muted" title="Deaths">{`☠ ${r.run.deaths}`}</span>

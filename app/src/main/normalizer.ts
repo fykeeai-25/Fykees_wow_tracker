@@ -79,6 +79,25 @@ function run(v: unknown): Run | undefined {
   }
 }
 
+/** The addon's open run; loot and gold so far come from the bags and money now. */
+function activeRun(v: unknown, c: Character): Run | undefined {
+  if (!isObj(v)) return undefined
+  const start = itemCounts(v.bagsStart ?? {}) ?? {}
+  const now = c.bags?.items ?? {}
+  const loot = Object.entries(now)
+    .map(([id, n]) => ({ itemId: Number(id), count: n - (start[Number(id)] ?? 0) }))
+    .filter((l) => l.count > 0)
+    .sort((a, b) => a.itemId - b.itemId)
+  const r = run({
+    ...v,
+    endedAt: v.lastSeenAt,
+    money: typeof v.moneyStart === 'number' && c.money !== undefined ? c.money - v.moneyStart : 0,
+    loot,
+    completed: undefined
+  })
+  return r && { ...r, inProgress: true }
+}
+
 function character(key: string, v: Obj): Character {
   const professions = isObj(v.professions)
     ? Object.entries(v.professions)
@@ -115,6 +134,8 @@ function character(key: string, v: Obj): Character {
       .filter((r): r is Run => r !== undefined)
       .sort((a, b) => a.startedAt - b.startedAt)
   }
+  const open = activeRun(v.activeRun, c)
+  if (open) c.runs = [...(c.runs ?? []), open]
   return c
 }
 

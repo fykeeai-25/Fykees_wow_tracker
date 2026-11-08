@@ -663,19 +663,46 @@ local function finishRun(c, endedAt)
   while #c.runs > MAX_RUNS do table.remove(c.runs, 1) end
   -- kept so a quick trip out (hearth, sell, summon back) can resume this run
   run.endedAt = endedAt
+  run.resume = nil
   c.lastRun = run
   c.activeRun = nil
 end
 
+-- Back in the same dungeon soon after leaving: resume the run. It may also be a
+-- fresh instance after a reset; that only shows once a boss dies a second time,
+-- so remember the finished entry and where the resumed part starts.
 local function reopenRun(c)
   local run = c.lastRun
   c.lastRun = nil
   local last = c.runs and c.runs[#c.runs]
-  if last and last.startedAt == run.startedAt then table.remove(c.runs) end
+  local record
+  if last and last.startedAt == run.startedAt then record = table.remove(c.runs) end
   run.endedAt = nil
   run.xpMark, run.xpMaxMark = xpNow() or 0, xpMaxNow() or 0
   run.lastSeenAt = now()
+  run.resume = {
+    record = record, at = now(), bags = bagItems(), money = GetMoney and GetMoney() or 0,
+    xp = run.xp, deaths = run.deaths, bosses = #run.bosses,
+  }
   c.activeRun = run
+end
+
+-- A boss from before the trip out died again: it was a new instance. Put the first
+-- run back as it was and continue with a new run from the moment of coming back.
+local function splitRun(c, run)
+  local r = run.resume
+  c.runs = c.runs or {}
+  if r.record then c.runs[#c.runs + 1] = r.record end
+  local bosses = {}
+  for i = r.bosses + 1, #run.bosses do bosses[#bosses + 1] = run.bosses[i] end
+  c.activeRun = {
+    dungeon = run.dungeon, difficulty = run.difficulty,
+    startedAt = r.at, lastSeenAt = now(), level = UnitLevel("player"),
+    xp = run.xp - r.xp, xpMark = run.xpMark, xpMaxMark = run.xpMaxMark,
+    moneyStart = r.money, bagsStart = r.bags,
+    deaths = run.deaths - r.deaths, bosses = bosses,
+  }
+  return c.activeRun
 end
 
 -- Called whenever the character may have entered or left an instance.
@@ -722,6 +749,14 @@ local onRunEncounter = runEvent(function(run, encounterId, encounterName, _, _, 
   if plain(success) ~= 1 then return end
   local name = plain(encounterName)
   if type(name) ~= "string" or name == "" then name = "Boss " .. tostring(plain(encounterId) or "?") end
+  if run.resume then
+    for i = 1, run.resume.bosses do
+      if run.bosses[i] == name then
+        run = splitRun(getChar(), run)
+        break
+      end
+    end
+  end
   run.bosses[#run.bosses + 1] = name
 end)
 local onRunCompleted = runEvent(function(run) run.completed = true end)
