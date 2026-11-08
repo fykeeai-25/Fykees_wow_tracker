@@ -105,7 +105,7 @@ describe.skipIf(!lua)('addon → app contract', () => {
 
   it('writes client diagnostics: build, interface, missing APIs, Legacy APIs', () => {
     const d = run().diagnostics!
-    expect(d).toMatchObject({ build: '1.60.1', buildNumber: '70058', interface: 11600, addonVersion: '0.1.0', checkedAt: 1761980000 })
+    expect(d).toMatchObject({ build: '1.60.1', buildNumber: '70058', interface: 11600, addonVersion: '0.1.1', checkedAt: 1761980000 })
     // alternatives count as available (legacy container API, GetCraftItemLink for recipe links)
     expect(d.missing).toEqual([])
     expect(d.legacyApis).toEqual(['C_LegacyTree'])

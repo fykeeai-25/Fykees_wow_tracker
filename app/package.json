@@ -1,7 +1,7 @@
 {
   "name": "azerothtracker",
   "productName": "AzerothTracker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "AzerothTracker - companion app for World of Warcraft: Forever",
   "main": "./out/main/index.js",

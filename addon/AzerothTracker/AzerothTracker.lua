@@ -4,7 +4,7 @@
 
 local ADDON_NAME = ...
 local SCHEMA_VERSION = 3
-local ADDON_VERSION = "0.1.0"
+local ADDON_VERSION = "0.1.1"
 
 local db
 
