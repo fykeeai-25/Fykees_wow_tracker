@@ -30,7 +30,8 @@ jobs:
         run: npm run build
       - name: Renderer bundle for preview
         if: success()
-        run: echo "RENDERER_B64_BEGIN $(tar -czf - -C out/renderer . | base64 -w0) RENDERER_B64_END"
+        # chunked: one very long log line gets dropped from the job log
+        run: tar -czf - -C out/renderer . | base64 -w 4000 | sed 's/^/RENDERER_B64 /'
       - name: Upload renderer preview
         if: success()
         uses: actions/upload-artifact@v4

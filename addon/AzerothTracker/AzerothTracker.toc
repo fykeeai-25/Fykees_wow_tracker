@@ -1,7 +1,7 @@
-## Interface: 11507
+## Interface: 16001
 ## Title: AzerothTracker
 ## Notes: Collects profession and inventory data for the AzerothTracker app.
-## Version: 0.1.0
+## Version: 0.1.1
 ## SavedVariables: AzerothTrackerDB
 
 AzerothTracker.lua

@@ -7,6 +7,9 @@ import { SettingsPopover } from './SettingsPopover'
 import { CharacterList } from './CharacterList'
 import { Dashboard } from './Dashboard'
 import { ItemSearch } from './ItemSearch'
+import { SidePanelProvider } from './SidePanel'
+
+const WIDE = 1000
 
 const nowSeconds = () => Math.floor(Date.now() / 1000)
 
@@ -17,6 +20,9 @@ export function App() {
   const [selectedKey, setSelectedKey] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // Right-column slot for detail panels; only used while the column is visible (wide window).
+  const [sideSlot, setSideSlot] = useState<HTMLElement | null>(null)
+  const [wide, setWide] = useState(() => window.innerWidth > WIDE)
   const closeSettings = useCallback(() => setShowSettings(false), [])
   const searchInput = useRef<HTMLInputElement>(null)
   const searchToggle = useRef<HTMLButtonElement>(null)
@@ -49,7 +55,8 @@ export function App() {
       setSearchOpen(false)
     }
     const onResize = (): void => {
-      if (window.innerWidth > 1000) setSearchOpen(false)
+      setWide(window.innerWidth > WIDE)
+      if (window.innerWidth > WIDE) setSearchOpen(false)
     }
     document.addEventListener('keydown', onKey)
     document.addEventListener('mousedown', onDown)
@@ -108,6 +115,7 @@ export function App() {
           <SettingsPopover gameDir={state.gameDir} account={state.account} onClose={closeSettings} diagnostics={snapshot?.diagnostics} />
         )}
         {snapshot ? (
+          <SidePanelProvider value={wide ? sideSlot : null}>
           <div className={`layout ${searchOpen ? 'search-open' : ''}`}>
             <CharacterList snapshot={snapshot} now={now} selectedKey={character?.key} onSelect={setSelectedKey} />
             <main className="center">
@@ -119,8 +127,10 @@ export function App() {
             </main>
             <aside ref={searchColumn} className="search-column" aria-label="Search">
               <ItemSearch snapshot={snapshot} now={now} inputRef={searchInput} />
+              <div ref={setSideSlot} className="side-slot" />
             </aside>
           </div>
+          </SidePanelProvider>
         ) : (
           <main className="center">
             <div className="hint">

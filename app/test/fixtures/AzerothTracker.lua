@@ -16,6 +16,7 @@ AzerothTrackerDB = {
 	["itemNames"] = {
 		[2447] = "Peacebloom",
 		[2449] = "Earthroot",
+		[5200] = "Thief's Blade",
 	},
 	["accountBank"] = {
 		["seenAt"] = 1761980000,
@@ -26,6 +27,49 @@ AzerothTrackerDB = {
 	["characters"] = {
 		["Firemaw-Thrall"] = {
 			["name"] = "Thrall",
+			["runs"] = {
+				{
+					["dungeon"] = "Wailing Caverns",
+					["difficulty"] = "Normal",
+					["startedAt"] = 1761900000,
+					["endedAt"] = 1761902700,
+					["level"] = 22,
+					["xp"] = 6100,
+					["money"] = 8800,
+					["deaths"] = 0,
+					["bosses"] = {
+						"Lady Anacondra", -- [1]
+					},
+					["loot"] = {
+					},
+				}, -- [1]
+				{
+					["dungeon"] = "The Deadmines",
+					["difficulty"] = "Normal",
+					["startedAt"] = 1761970000,
+					["endedAt"] = 1761971500,
+					["level"] = 23,
+					["xp"] = 4200,
+					["money"] = 15320,
+					["deaths"] = 1,
+					["bosses"] = {
+						"Rhahk'Zor", -- [1]
+						"Edwin VanCleef", -- [2]
+					},
+					["loot"] = {
+						{
+							["itemId"] = 2447,
+							["count"] = 3,
+						}, -- [1]
+						{
+							["itemId"] = 5200,
+							["count"] = 1,
+						}, -- [2]
+					},
+					["completed"] = true,
+				}, -- [2]
+				"not a run", -- [3]
+			},
 			["realm"] = "Firemaw",
 			["race"] = "Orc",
 			["class"] = "SHAMAN",
@@ -84,6 +128,25 @@ AzerothTrackerDB = {
 		},
 		["Firemaw-Jaina"] = {
 			["name"] = "Jaina",
+			["runs"] = {
+				{
+					["dungeon"] = "The Deadmines",
+					["startedAt"] = 1761850000,
+					["endedAt"] = 1761851200,
+					["level"] = 10,
+					["xp"] = 3000,
+					["money"] = 5000,
+					["deaths"] = 2,
+					["bosses"] = {
+					},
+					["loot"] = {
+						{
+							["itemId"] = 765,
+							["count"] = 2,
+						}, -- [1]
+					},
+				}, -- [1]
+			},
 			["realm"] = "Firemaw",
 			["race"] = "Human",
 			["class"] = "MAGE",

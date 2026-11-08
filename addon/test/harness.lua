@@ -4,13 +4,26 @@
 
 local function link(id, name) return "|cffffffff|Hitem:" .. id .. "::::::::|h[" .. name .. "]|h|r" end
 
-time = function() return 1761980000 end
+clock = 1761980000
+time = function() return clock end
 GetRealmName = function() return "Firemaw" end
 UnitName = function() return "Thrall" end
 UnitRace = function() return "Orc", "Orc" end
 UnitClass = function() return "Shaman", "SHAMAN" end
 UnitLevel = function() return 24 end
-GetMoney = function() return 123456 end
+money = 123456
+GetMoney = function() return money end
+-- instance / XP state for the dungeon-run scenarios
+inInstance, instanceName, dead = false, nil, false
+xpNow, xpMax = 900, 2000
+IsInInstance = function() return inInstance, inInstance and "party" or "none" end
+GetInstanceInfo = function()
+  if not inInstance then return "Kalimdor", "none", 0, "", 0, 0, false, 1 end
+  return instanceName, "party", 1, "Normal", 5, 0, false, 36, 5
+end
+UnitXP = function() return xpNow end
+UnitXPMax = function() return xpMax end
+UnitIsDeadOrGhost = function() return dead end
 GetBuildInfo = function() return "1.60.1", "70058", "Oct 1 2026", 11600 end
 C_LegacyTree = { GetPoints = function() return 9 end }
 currencyRows = {
@@ -76,7 +89,7 @@ GetCraftReagentInfo = function() return nil end
 GetCraftReagentItemLink = function() return nil end
 GetCraftItemLink = function() return nil end
 
-local containers = {
+containers = {
   [0] = { { 2447, "Peacebloom", 4 }, { 2449, "Earthroot", 2 } },
   [-1] = { { 2447, "Peacebloom", 8 } },
 }
@@ -98,6 +111,49 @@ end
 SlashCmdList = {}
 
 if (arg[2] or "") == "no-currency-api" then C_CurrencyInfo = nil end
+if string.sub(arg[2] or "", 1, 6) == "modern" then
+  -- WoW: Forever 1.60 has none of the Classic skill / trade skill / craft functions
+  for _, n in ipairs({ "GetNumSkillLines", "GetSkillLineInfo", "GetTradeSkillLine", "GetNumTradeSkills",
+    "GetTradeSkillInfo", "GetTradeSkillNumReagents", "GetTradeSkillReagentInfo", "GetTradeSkillReagentItemLink",
+    "GetTradeSkillRecipeLink", "GetTradeSkillItemLink", "GetTradeSkillNumMade", "GetCraftDisplaySkillLine",
+    "GetNumCrafts", "GetCraftInfo", "GetCraftNumReagents", "GetCraftReagentInfo", "GetCraftReagentItemLink",
+    "GetCraftItemLink" }) do _G[n] = nil end
+  GetProfessions = function() return 1, nil, nil, nil, 3 end
+  GetProfessionInfo = function(i)
+    if i == 1 then return "Alchemy", "icon", 142, 150, 0, 0, 171 end
+    return "Cooking", "icon", 50, 75, 0, 0, 185
+  end
+  -- modern recipe API (retail style): recipe ID = spell ID, reagents in schematic slots
+  local basic = 1
+  Enum = { CraftingReagentType = { Modifying = 0, Basic = basic, Finishing = 2 } }
+  local itemNames = { [2447] = "Peacebloom", [2449] = "Earthroot", [765] = "Silverleaf", [118] = "Minor Healing Potion" }
+  C_Item = { GetItemNameByID = function(id) return itemNames[id] end }
+  local function slot(itemId, qty, reagentType, required)
+    return { reagents = { { itemID = itemId } }, quantityRequired = qty, reagentType = reagentType, required = required }
+  end
+  local modernRecipes = {
+    [2330] = { info = { recipeID = 2330, name = "Minor Healing Potion", learned = true, relativeDifficulty = 3 },
+      schematic = { recipeID = 2330, outputItemID = 118, quantityMin = 1, quantityMax = 1,
+        reagentSlotSchematics = { slot(2447, 1, basic, true), slot(2449, 1, basic, true), slot(9000, 1, 0, false) } } },
+    [2329] = { info = { recipeID = 2329, name = "Elixir of Lion's Strength", learned = true, relativeDifficulty = 2 },
+      schematic = { recipeID = 2329, outputItemID = 2454, quantityMin = 1, quantityMax = 1,
+        reagentSlotSchematics = { slot(2449, 1, basic, true), slot(765, 1, basic, true) } } },
+    [2337] = { info = { recipeID = 2337, name = "Lesser Healing Potion", learned = false, relativeDifficulty = 0 },
+      schematic = { recipeID = 2337, outputItemID = 858, quantityMin = 1, quantityMax = 1, reagentSlotSchematics = {} } },
+  }
+  linkedTradeSkill = false
+  C_TradeSkillUI = {
+    IsTradeSkillReady = function() return true end,
+    IsTradeSkillLinked = function() return linkedTradeSkill end,
+    IsTradeSkillGuild = function() return false end,
+    IsNPCCrafting = function() return false end,
+    GetAllRecipeIDs = function() return { 2330, 2329, 2337 } end,
+    GetBaseProfessionInfo = function() return { professionName = "Alchemy", skillLevel = 142, maxSkillLevel = 150 } end,
+    GetRecipeInfo = function(id) return modernRecipes[id] and modernRecipes[id].info end,
+    GetRecipeSchematic = function(id) return modernRecipes[id] and modernRecipes[id].schematic end,
+    Broken = function() error("boom") end,
+  }
+end
 local chunk = assert(loadfile(arg[1]))
 chunk("AzerothTracker")
 
@@ -109,10 +165,12 @@ end
 local scenario = arg[2] or "default"
 if scenario == "global-mismatch" then TRADE_SKILLS = "Trade Skills" end
 if scenario == "cache-arrives" then uncachedReagent = true end
+if scenario == "modern-linked" then linkedTradeSkill = true end
 
 fire("ADDON_LOADED", "AzerothTracker")
 fire("PLAYER_LOGIN")
 fire("TRADE_SKILL_SHOW")
+if string.sub(scenario, 1, 6) == "modern" then fire("TRADE_SKILL_LIST_UPDATE") end
 fire("BANKFRAME_OPENED")
 fire("BAG_UPDATE", 0)
 fire("BANKFRAME_CLOSED")
@@ -143,6 +201,69 @@ elseif scenario == "uncached-reagent" then
   -- reopening the window while one reagent item is not cached by the client
   uncachedReagent = true
   fire("TRADE_SKILL_UPDATE")
+elseif scenario == "dungeon-run" then
+  fire("PLAYER_ENTERING_WORLD") -- outside: nothing happens
+  clock = clock + 100
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 300
+  xpNow = 1500 fire("PLAYER_XP_UPDATE") -- +600
+  xpNow, xpMax = 300, 2200 fire("PLAYER_XP_UPDATE") -- level-up: +500 +300
+  money = money + 2500 fire("PLAYER_MONEY")
+  containers[0][1] = { 2447, "Peacebloom", 6 } -- had 4
+  containers[0][3] = { 5200, "Thief's Blade", 1 }
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1)
+  fire("ENCOUNTER_END", 2, "Sneed", 1, 5, 0) -- wipe: not a kill
+  fire("PLAYER_DEAD")
+  -- released: the ghost appears at the graveyard outside – the run goes on
+  dead, inInstance = true, false
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 120
+  dead, inInstance = false, true
+  fire("PLAYER_ENTERING_WORLD")
+  fire("ENCOUNTER_END", 3, "Edwin VanCleef", 1, 5, 1)
+  fire("LFG_COMPLETION_REWARD")
+  clock = clock + 900
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-port-back" or scenario == "dungeon-twice" then
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 600
+  xpNow = 1000 fire("PLAYER_XP_UPDATE") -- +100
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD") -- hearth out to sell
+  clock = clock + (scenario == "dungeon-port-back" and 300 or 3600)
+  inInstance = true
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 600
+  xpNow = 1200 fire("PLAYER_XP_UPDATE") -- +200
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-farm" then
+  -- clears the dungeon, resets it and goes straight back in
+  inInstance, instanceName = true, "The Deadmines"
+  fire("PLAYER_ENTERING_WORLD")
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1)
+  fire("ENCOUNTER_END", 3, "Edwin VanCleef", 1, 5, 1)
+  xpNow = 1500 fire("PLAYER_XP_UPDATE") -- +600
+  clock = clock + 600
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+  clock = clock + 120
+  inInstance = true
+  fire("PLAYER_ENTERING_WORLD")
+  money = money + 700 fire("PLAYER_MONEY")
+  xpNow = 1800 fire("PLAYER_XP_UPDATE") -- +300
+  fire("PLAYER_DEAD")
+  fire("ENCOUNTER_END", 1, "Rhahk'Zor", 1, 5, 1) -- killed again: a new instance
+  clock = clock + 600
+  inInstance = false
+  fire("PLAYER_ENTERING_WORLD")
+elseif scenario == "dungeon-logout" then
+  -- logs out inside; the run is kept and still open in the file
+  inInstance, instanceName = true, "Wailing Caverns"
+  fire("PLAYER_ENTERING_WORLD")
 elseif scenario == "collapsed-recipes" then
   -- player collapses the "Potions" category in the profession window
   recipes = { { "Potions", "header" } }

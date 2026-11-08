@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import type { Character, TrackerSnapshot } from '../shared/types'
 import { ProfessionsDetail } from './professions/ProfessionsView'
 import { ProfessionsSummary } from './professions/ProfessionsSummary'
+import { RunsDetail, RunsSummary } from './runs/RunHistory'
 
 
 export interface BubbleProps {
@@ -19,5 +20,6 @@ export interface BubbleDef {
 
 /** Dashboard bubbles, in display order. New modules (Legacy planner…) are added here. */
 export const bubbles: BubbleDef[] = [
-  { id: 'professions', title: 'Professions', Summary: ProfessionsSummary, Detail: ProfessionsDetail }
+  { id: 'professions', title: 'Professions', Summary: ProfessionsSummary, Detail: ProfessionsDetail },
+  { id: 'runs', title: 'Run history', Summary: RunsSummary, Detail: RunsDetail }
 ]

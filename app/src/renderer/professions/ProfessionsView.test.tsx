@@ -5,6 +5,7 @@ import type { ReactElement } from 'react'
 import type { TrackerSnapshot } from '../../shared/types'
 import { ProfessionsDetail } from './ProfessionsView'
 import { DataProvider } from '../DataContext'
+import { SidePanelProvider } from '../SidePanel'
 import { fixtureSnapshot, samplePack, FIXTURE_NOW } from '../../../test/snapshot'
 
 afterEach(cleanup)
@@ -61,6 +62,28 @@ describe('ProfessionsView', () => {
     expect(stale?.textContent).toContain('Thrall · Bank 8 · seen 4 days ago')
     expect(within(panel).getByText(/Jaina · Bags 3 · seen today/)).toBeTruthy()
     expect(within(panel).getByText(/Account bank · 20 · seen today/)).toBeTruthy()
+  })
+
+  it('shows the materials in the side panel when the layout has one', () => {
+    const side = document.createElement('div')
+    document.body.appendChild(side)
+    const s = fixtureSnapshot()
+    const character = s.characters.find((c) => c.name === 'Thrall')!
+    const { container } = render(
+      withData(
+        <SidePanelProvider value={side}>
+          <ProfessionsDetail character={character} snapshot={s} now={FIXTURE_NOW} />
+        </SidePanelProvider>
+      )
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Alchemy/ }))
+    fireEvent.click(screen.getByText('Minor Healing Potion'))
+    const panel = within(side).getByRole('region', { name: 'Materials' })
+    expect(within(panel).getByText('Can craft 3× · limited by Earthroot')).toBeTruthy()
+    expect(container.querySelector('.materials')).toBeNull()
+    // the recipe list takes the full width when the materials live elsewhere
+    expect(container.querySelector('.profession-body.no-side')).not.toBeNull()
+    side.remove()
   })
 
   it('warns about banks that were never scanned', () => {
